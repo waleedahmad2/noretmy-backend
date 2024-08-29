@@ -1,26 +1,33 @@
+const Job = require("../models/Job");
 const Order = require("../models/Order"); // Assuming your model is named 'Order'
 const dayjs=require("dayjs");
 
 // Controller to create a new order
 const createOrder = async (req, res) => {
+    
   try {
+
+
     // Extract data from the request body
-    const { gigId, img, title, price, sellerId, buyerId, payment_intent } = req.body;
+    const { gigId, price, buyerId, } = req.body;
+
+    const gig= await Job.findById(gigId);
+
 
     // Validate required fields
-    if (!gigId || !title || !price || !sellerId || !buyerId || !payment_intent) {
+    if (!gigId || !price  || !buyerId ) {
       return res.status(400).json({ message: "All required fields must be provided." });
     }
 
     // Create a new order
     const newOrder = new Order({
-      gigId,
-      img,
-      title,
-      price,
-      sellerId, // Use the sellerId from the request body
-      buyerId,  // Use the buyerId from the request body
-      payment_intent,
+      gigId :gigId,
+      img :gig.img,
+      title:gig.title,
+      price:price,
+      sellerId :gig.sellerId, // Use the sellerId from the request body
+      buyerId :buyerId, // Use the buyerId from the request body
+      payment_intent :"Temp"
     });
 
     // Save the order to the database
@@ -56,6 +63,7 @@ const getOrder = async (req, res) => {
       const { id } = req.params;
       
       // Fetch orders where either sellerId or buyerId matches the provided ID
+      //show completed orders only
       const orders = await Order.find({
         $or: [{ sellerId: id }, { buyerId: id }]
       });

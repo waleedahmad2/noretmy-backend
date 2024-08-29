@@ -10,26 +10,33 @@ const messageRoutes = require('./routes/messageRoutes');
 const reviewRoutes = require('./routes/reviewRoutes');
 const userRoutes = require('./routes/userRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
-
 const conversationRoutes = require('./routes/conversationRoutes');
-
-
+const contactRoutes = require('./routes/contactRoutes');
 
 const { uploadFiles, uploadImages } = require('./controllers/uploadController');
 const upload = require('./config/multer-cloudinary-storage');
 const cookieParser = require('cookie-parser');
-
+const socketHandler = require('./sockets/socketHandler'); // Import socket handler
 
 require('dotenv').config();
 
 const app = express();
 
-app.use(cors());
+// Middleware setup
+app.use(cors({
+  origin: ["http://localhost:8081","http://localhost:3000"] ,  // Allow the specific origin
+  credentials: true                 // Enable credentials
+}));
+
 app.use(express.json());
 app.use(cookieParser());
 
 connectDB();
 
+
+app.get('/', (req, res) => { try { res.send('Hello, World!'); } catch (error) { console.error('Error in / route:', error); res.status(500).send('Internal Server Error'); } });
+
+// Session middleware (if you need session-based authentication)
 // app.use(
 //   session({
 //     secret: process.env.SESSION_SECRET,
@@ -39,25 +46,37 @@ connectDB();
 //   })
 // );
 
-app.use('/api',uploadRoutes);
+// Route handlers
+app.use('/api', uploadRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
-app.use('/api/job',jobRoutes);
- app.use('/api/orders',orderRoutes);
-// app.use('/api/conversations',conversationRoutes);
-// app.use('/api/messages',messageRoutes);
-// app.use('/api/reviews',reviewRoutes);
+app.use('/api/job', jobRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/conversations', conversationRoutes);
+app.use('/api/messages', messageRoutes);
+app.use('/api/reviews', reviewRoutes);
+app.use('/api/contact', contactRoutes);
 
-app.use((err,req,res,next)=>{
-  const errorStatus=err.status || 500;
-  const errorMessage= err.message || "Something went wrong!";
 
+// Error handling middleware
+app.use((err, req, res, next) => {
+  const errorStatus = err.status || 500;
+  const errorMessage = err.message || "Something went wrong!";
   return res.status(errorStatus).send(errorMessage);
+});
 
-})
+// Create HTTP server and integrate with Socket.io
+const server = require('http').createServer(app);
+const io = require('socket.io')(server, {
+  cors: {
+    origin:"http://localhost:8081" , // Allow the specific origin
+    credentials: true,
+  }
+});
 
+// Initialize socket handler with the io instance
+socketHandler(io);
 
-
-
+// Start server
 const PORT = process.env.PORT || 5001;
-app.listen(PORT,'0.0.0.0', () => console.log(`Server running on port ${PORT}`));
+server.listen(PORT, '0.0.0.0', () => console.log(`Server running on port ${PORT}`));

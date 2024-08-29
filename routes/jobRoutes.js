@@ -2,7 +2,8 @@
 const express = require('express');
 const multer = require('multer');
 const { storage } = require('../config/cloudinaryConfig');
-const { createJob ,getAllJobs, getUserJobs,getFeaturedJobs} = require('../controllers/jobController');
+const { createJob ,getAllJobs, getUserJobs,getFeaturedJobs, deleteJob} = require('../controllers/jobController');
+const { verifyToken } = require('../middleware/jwt');
 
 const upload = multer({ storage });
 
@@ -12,6 +13,9 @@ router.post("/",getUserJobs);
 router.post('/add-job', upload.any(), createJob);
 router.get('/', getAllJobs);
 router.get('/feature', getFeaturedJobs);
+router.delete('/:id',verifyToken, deleteJob);
+
+
 
 
 

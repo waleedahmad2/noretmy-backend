@@ -1,18 +1,34 @@
-// models/Job.js
 const mongoose = require('mongoose');
 
 const jobSchema = new mongoose.Schema({
     title: { type: String, required: true },
     location: { type: String, required: true },
+    cat: { type: String, required: true },
     description: { type: String, required: true },
     keywords: [{ type: String, required: true }],  // Array of strings
     whyChooseMe: { type: String, required: true }, // Changed to string
     pricingPlan: {
-        basic: { type: Number },
-        premium: { type: Number },
-        pro: { type: Number },
+        basic: {
+            title: { type: String },
+            description: { type: String },
+            price: { type: Number },
+            deliveryTime: { type: Number } // e.g., "24 hours", "3 days", etc.
+        },
+        premium: {
+            title: { type: String },
+            description: { type: String },
+            price: { type: Number },
+            deliveryTime: { type: Number}
+        },
+        pro: {
+            title: { type: String },
+            description: { type: String },
+            price: { type: Number },
+            deliveryTime: { type: Number}
+        }
     },
     addons: {
+        title: { type: String },
         extraService: { type: Number },
     },
     faqs: [
@@ -23,10 +39,11 @@ const jobSchema = new mongoose.Schema({
     ],
     jobStatus: { type: String, required: true },
     photos: [{ type: String }],
-    videos: [{ type: String }],
-    audios: [{ type: String }],
     upgradeOption: { type: String },
-    sellerId:{type:String,required:true}
+    sellerId: { type: String, required: true },
+    totalStars: { type: Number, default: 0 },
+    starNumber: { type: Number, default: 0 },
+    sales: { type: Number, default: 0 }
 }, {
     timestamps: true
 });
