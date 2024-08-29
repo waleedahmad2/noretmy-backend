@@ -28,7 +28,11 @@ const app = express();
 //   credentials: true                 // Enable credentials
 // }));
 
-app.use(cors());
+app.use(cors({
+  origin: '*', // For testing purposes; adjust for production
+  methods: ['GET', 'POST'],
+  credentials: true
+}));
 
 app.use(express.json());
 app.use(cookieParser());
