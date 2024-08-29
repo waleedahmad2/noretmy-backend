@@ -32,7 +32,8 @@ const handleLogin = async (req, res,next) => {
     }).status(200)
     .json(user);
   } catch (error) {
-    next(error)
+res.status(500).send(error);
+    console.log(error);
   }
 };
 
