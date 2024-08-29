@@ -22,16 +22,11 @@ require('dotenv').config();
 
 const app = express();
 
-// Middleware setup
-// app.use(cors({
-//   origin: ["http://localhost:8081","http://localhost:3000"] ,  // Allow the specific origin
-//   credentials: true                 // Enable credentials
-// }));
-
+// CORS configuration
 app.use(cors({
-  origin: '*', // For testing purposes; adjust for production
+  origin: ['http://localhost:8081', 'http://localhost:3001'], // List allowed origins here
   methods: ['GET', 'POST'],
-  credentials: true
+  credentials: true // Allow credentials
 }));
 
 app.use(express.json());
@@ -39,8 +34,14 @@ app.use(cookieParser());
 
 connectDB();
 
-
-app.get('/', (req, res) => { try { res.send('Hello, World!'); } catch (error) { console.error('Error in / route:', error); res.status(500).send('Internal Server Error'); } });
+app.get('/', (req, res) => { 
+  try { 
+    res.send('Hello, World!'); 
+  } catch (error) { 
+    console.error('Error in / route:', error); 
+    res.status(500).send('Internal Server Error'); 
+  } 
+});
 
 // Session middleware (if you need session-based authentication)
 // app.use(
@@ -63,7 +64,6 @@ app.use('/api/messages', messageRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/contact', contactRoutes);
 
-
 // Error handling middleware
 app.use((err, req, res, next) => {
   const errorStatus = err.status || 500;
@@ -75,7 +75,7 @@ app.use((err, req, res, next) => {
 const server = require('http').createServer(app);
 const io = require('socket.io')(server, {
   cors: {
-    origin:"http://localhost:8081" , // Allow the specific origin
+    origin: ['http://localhost:8081', 'http://localhost:3001'], // List allowed origins here
     credentials: true,
   }
 });
