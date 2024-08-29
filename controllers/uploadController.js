@@ -1,10 +1,12 @@
-const multer = require('multer');
 const cloudinary = require('../config/cloudinaryConfig');
 const { Readable } = require('stream');
+const multer = require('multer');
 
-const storage = multer.memoryStorage(); // Use memory storage instead of disk storage
-const upload = multer({ storage }).array('images', 5);
+// Use memory storage for file uploads
+const storage = multer.memoryStorage();
+const upload = multer({ storage }).array('images', 5); // Declare upload only once here
 
+// Function to handle image uploads
 const uploadImages = async (req, res) => {
   console.log('Request Body:', req.body);
   console.log('Request Files:', req.files);
@@ -15,6 +17,7 @@ const uploadImages = async (req, res) => {
       return res.status(400).json({ error: 'No files uploaded' });
     }
 
+    // Function to upload a file to Cloudinary
     const uploadToCloudinary = async (file) => {
       return new Promise((resolve, reject) => {
         const stream = cloudinary.uploader.upload_stream({ folder: 'uploads' }, (error, result) => {
@@ -34,9 +37,11 @@ const uploadImages = async (req, res) => {
       });
     };
 
+    // Upload all files to Cloudinary
     const uploadPromises = req.files.map(uploadToCloudinary);
     const uploadResults = await Promise.all(uploadPromises);
 
+    // Extract URLs from Cloudinary responses
     const urls = uploadResults.map(result => result.secure_url);
 
     res.json({
