@@ -23,10 +23,12 @@ require('dotenv').config();
 const app = express();
 
 // Middleware setup
-app.use(cors({
-  origin: ["http://localhost:8081","http://localhost:3000"] ,  // Allow the specific origin
-  credentials: true                 // Enable credentials
-}));
+// app.use(cors({
+//   origin: ["http://localhost:8081","http://localhost:3000"] ,  // Allow the specific origin
+//   credentials: true                 // Enable credentials
+// }));
+
+app.use(cors());
 
 app.use(express.json());
 app.use(cookieParser());
