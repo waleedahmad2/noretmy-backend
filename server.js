@@ -23,11 +23,17 @@ require('dotenv').config();
 const app = express();
 
 // CORS configuration
-app.use(cors({
-  origin: ['http://localhost:8081', 'http://localhost:3001'], // List allowed origins here
-  methods: ['GET', 'POST'],
-  credentials: true // Allow credentials
-}));
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Allow any origin or specify your React Native app's origin
+    // Origin header will be empty for mobile apps, so you might skip origin check
+    callback(null, true);
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true
+};
+
+app.use(cors(corsOptions));
 
 app.use(express.json());
 app.use(cookieParser());
