@@ -22,12 +22,18 @@ require('dotenv').config();
 
 const app = express();
 
-// CORS configuration
+const allowedOrigins = [
+  'http://localhost:8081/screens',
+  'http ://localhost:3000',
+];
+
 const corsOptions = {
   origin: (origin, callback) => {
-    // Allow any origin or specify your React Native app's origin
-    // Origin header will be empty for mobile apps, so you might skip origin check
-    callback(null, true);
+    if (allowedOrigins.includes(origin) || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true
