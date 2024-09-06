@@ -23,8 +23,8 @@ require('dotenv').config();
 const app = express();
 
 const allowedOrigins = [
-  'http://localhost:8081/screens',
-  'http ://localhost:3000',
+  'http://localhost:8081', // Your frontend URL
+  'https://your-web-app-domain.com'
 ];
 
 const corsOptions = {
@@ -36,8 +36,11 @@ const corsOptions = {
     }
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  credentials: true
+  credentials: true,
+  preflightContinue: true,
+  optionsSuccessStatus: 204
 };
+
 
 app.use(cors(corsOptions));
 
