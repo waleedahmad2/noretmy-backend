@@ -29,20 +29,24 @@ const allowedOrigins = [
 
 const corsOptions = {
   origin: (origin, callback) => {
+    console.log('Origin: ', origin);
     if (allowedOrigins.includes(origin) || !origin) {
       callback(null, true);
     } else {
+      console.log('Blocked by CORS: ', origin);
       callback(new Error('Not allowed by CORS'));
     }
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true,
-  preflightContinue: true,
+  preflightContinue: false,
   optionsSuccessStatus: 204
 };
 
-
 app.use(cors(corsOptions));
+
+
+
 
 app.use(express.json());
 app.use(cookieParser());
