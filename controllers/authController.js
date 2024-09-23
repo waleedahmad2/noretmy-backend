@@ -29,6 +29,8 @@ const handleLogin = async (req, res,next) => {
     // const {password,...info}=user;
     res.cookie("accessToken",token,{
       httpOnly:true,
+      secure: true, 
+  sameSite: 'None',
     }).status(200)
     .json(user);
   } catch (error) {
