@@ -82,6 +82,8 @@ app.use('/api/conversations', conversationRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/contact', contactRoutes);
+app.use('/api/payment', paymentRoutes);
+
 
 // Error handling middleware
 app.use((err, req, res, next) => {
