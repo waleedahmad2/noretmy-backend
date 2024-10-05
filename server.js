@@ -12,6 +12,8 @@ const userRoutes = require('./routes/userRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
 const conversationRoutes = require('./routes/conversationRoutes');
 const contactRoutes = require('./routes/contactRoutes');
+const paymentRoutes = require('./routes/paymentRoutes');
+
 
 const { uploadFiles, uploadImages } = require('./controllers/uploadController');
 const upload = require('./config/multer-cloudinary-storage');
