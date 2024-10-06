@@ -4,7 +4,6 @@ exports.createPaymentIntent = async (req, res) => {
   const { amount } = req.body;
 
   try {
-    // Create a PaymentIntent with the provided amount
     const paymentIntent = await stripe.paymentIntents.create({
       amount, // Stripe expects the amount in the smallest currency unit (e.g., cents for USD)
       currency: 'usd', // Use the currency of your choice
