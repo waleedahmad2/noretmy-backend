@@ -1,26 +1,8 @@
-// const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY); // Make sure to add your Stripe secret key in your .env file
-
-// exports.createPaymentIntent = async (req, res) => {
-//   const { amount } = req.body;
-
-//   try {
-//     const paymentIntent = await stripe.paymentIntents.create({
-//       amount, // Stripe expects the amount in the smallest currency unit (e.g., cents for USD)
-//       currency: 'usd', // Use the currency of your choice
-//       payment_method_types: ['card'], // You can add other payment methods here if needed
-//     });
-
-//     res.status(200).json({
-//       client_secret: paymentIntent.client_secret, // This will be sent to the frontend
-//     });
-//   } catch (error) {
-//     console.error('Error creating payment intent:', error);
-//     res.status(500).json({ error: 'Failed to create payment intent' });
-//   }
-// };
 
 
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const Freelancer = require('../models/Freelancer');
+
 
 exports.createCustomerAndPaymentIntent = async (req, res) => {
   const { amount, email } = req.body;
@@ -66,4 +48,86 @@ exports.createCustomerAndPaymentIntent = async (req, res) => {
     console.error('Error creating customer and payment intent:', error);
     res.status(500).json({ error: 'Failed to create payment intent' });
   }
+};
+
+
+
+
+
+
+
+
+
+
+// Process a Withdrawal Request
+exports.withdrawFunds = async (req, res) => {
+    const { email, amount } = req.body; // Freelancer's email and withdrawal amount
+
+    try {
+        // Check if the freelancer account exists
+        let freelancerAccount = await Freelancer.findOne({ email });
+
+        // If the account doesn't exist, create it
+        if (!freelancerAccount) {
+            const account = await stripe.accounts.create({
+                type: 'standard', // You can choose 'standard' or 'express'
+                country: 'US', // Set the country for the connected account
+                email: email, // Freelancer's email
+                capabilities: {
+                    card_payments: { requested: true },
+                    transfers: { requested: true },
+                },
+            });
+
+            // Create a new Freelancer record in the database
+            freelancerAccount = new Freelancer({
+                email,
+                stripeAccountId: account.id,
+                availableBalance: 30, //
+            });
+
+            await freelancerAccount.save();
+        }
+
+        // Check if the available balance is sufficient
+        if (freelancerAccount.availableBalance < amount) {
+            return res.status(400).json({ error: 'Insufficient funds' });
+        }
+
+        // Create a payout to the freelancer's connected account
+        const payout = await stripe.payouts.create(
+            {
+                amount: amount, 
+                currency: 'usd', 
+            },
+            {
+                stripeAccount: freelancerAccount.stripeAccountId, 
+            }
+        );
+
+        freelancerAccount.availableBalance -= amount;
+        await freelancerAccount.save();
+
+        res.status(200).json({ success: true, payout });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+};
+
+exports.processRefund = async (req, res) => {
+    const { chargeId, amount } = req.body; // Charge ID and refund amount
+
+    try {
+        // Create a refund
+        const refund = await stripe.refunds.create({
+            charge: chargeId,
+            amount: amount, // Amount in cents (optional, refund full amount if omitted)
+        });
+
+        res.status(200).json({ success: true, refund });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, error: error.message });
+    }
 };
