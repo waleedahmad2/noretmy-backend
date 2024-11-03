@@ -2,7 +2,7 @@ const User = require('../models/User');
 const crypto = require('crypto');
 const { sendVerificationEmail } = require('./emailService');
 
-const signUp = async (email, password, fullName, username) => {
+const signUp = async (email, password, fullName, username,isSeller,isCompany) => {
   const existingUser = await User.findOne({ email });
   if (existingUser) {
     throw new Error('Email already in use');
@@ -15,6 +15,8 @@ const signUp = async (email, password, fullName, username) => {
     password,
     fullName,
     username,
+    isSeller,
+    isCompany,
     isVerified: false,
     verificationToken: token,
   });
