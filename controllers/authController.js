@@ -3,9 +3,9 @@ const { signUp, signIn, verifyEmail, resendVerificationEmail } = require('../ser
 const User = require('../models/User');
 
 const handleSignup = async (req, res,next) => {
-  const { email, password, fullName, username } = req.body;
+  const { email, password, fullName, username,isSeller,isCompany} = req.body;
   try {
-    const user = await signUp(email, password, fullName, username);
+    const user = await signUp(email, password, fullName, username,isSeller,isCompany);
 
 
     res.status(201).json({ message: 'Verification email sent. Please check your email to verify your account.' });
