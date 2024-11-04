@@ -12,4 +12,19 @@ router.post('/withdraw', withdrawFunds);
 router.post('/refund', processRefund);
 
 
+// Paypal Routes
+
+// Route to create a payment (checkout)
+router.get('/pay', paypalController.createPayment);
+
+// Route to handle successful payment
+router.get('/success', paypalController.executePayment);
+
+// Route to handle payment cancellation
+router.get('/cancel', paypalController.cancelPayment);
+
+// Route to create a payout (withdrawal)
+router.post('/payout', paypalController.createPayout);
+
+
 module.exports = router;

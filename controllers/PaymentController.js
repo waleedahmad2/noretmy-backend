@@ -1,6 +1,7 @@
 
 
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const paypal = require('paypal-rest-sdk');
 const Freelancer = require('../models/Freelancer');
 
 
@@ -130,4 +131,130 @@ exports.processRefund = async (req, res) => {
         console.error(error);
         res.status(500).json({ success: false, error: error.message });
     }
+};
+
+
+
+//  Paypal Co trollers
+
+
+paypal.configure({
+  mode: 'sandbox', // Use 'sandbox' for testing, 'live' for production
+  client_id: process.env.PAYPAL_CLIENT_ID,
+  client_secret: process.env.PAYPAL_CLIENT_SECRET,
+});
+
+
+// Controller to create a PayPal payment (checkout)
+exports.createPayment = (req, res) => {
+  const paymentJson = {
+    intent: 'sale',
+    payer: {
+      payment_method: 'paypal',
+    },
+    redirect_urls: {
+      return_url: 'http://localhost:3000/api/paypal/success',
+      cancel_url: 'http://localhost:3000/api/paypal/cancel',
+    },
+    transactions: [
+      {
+        item_list: {
+          items: [
+            {
+              name: 'Sample Item',
+              sku: '001',
+              price: '10.00',
+              currency: 'USD',
+              quantity: 1,
+            },
+          ],
+        },
+        amount: {
+          currency: 'USD',
+          total: '10.00',
+        },
+        description: 'This is the payment description.',
+      },
+    ],
+  };
+
+  paypal.payment.create(paymentJson, (error, payment) => {
+    if (error) {
+      console.error('Error creating payment:', error);
+      res.status(500).json({ error: 'Error creating PayPal payment' });
+    } else {
+      const approvalUrl = payment.links.find(link => link.rel === 'approval_url').href;
+      res.redirect(approvalUrl);
+    }
+  });
+};
+
+// Controller to execute a PayPal payment
+exports.executePayment = (req, res) => {
+  const payerId = req.query.PayerID;
+  const paymentId = req.query.paymentId;
+
+  const executePaymentJson = {
+    payer_id: payerId,
+    transactions: [
+      {
+        amount: {
+          currency: 'USD',
+          total: '10.00',
+        },
+      },
+    ],
+  };
+
+  paypal.payment.execute(paymentId, executePaymentJson, (error, payment) => {
+    if (error) {
+      console.error('Error executing payment:', error);
+      res.status(500).json({ error: 'Payment failed' });
+    } else {
+      res.send('Payment successful');
+    }
+  });
+};
+
+// Controller to handle payment cancellation
+exports.cancelPayment = (req, res) => {
+  res.send('Payment cancelled');
+};
+
+// Controller to create a PayPal payout (withdrawal)
+exports.createPayout = (req, res) => {
+  const { receiverEmail, amount } = req.body;
+
+  const payoutJson = {
+    sender_batch_header: {
+      sender_batch_id: Math.random().toString(36).substring(9),
+      email_subject: 'You have a payout!',
+      email_message: 'You have received a payout! Thanks for using our service!',
+    },
+    items: [
+      {
+        recipient_type: 'EMAIL',
+        amount: {
+          value: amount,
+          currency: 'USD',
+        },
+        receiver: receiverEmail,
+        note: 'Thank you for using our service',
+        sender_item_id: 'item-1',
+      },
+    ],
+  };
+
+  paypal.payout.create(payoutJson, function (error, payout) {
+    if (error) {
+      console.error('Error creating payout:', error.response);
+      res.status(500).json({ error: 'Error creating PayPal payout' });
+    } else {
+      console.log('Payout created successfully:', payout);
+      res.json({
+        message: 'Payout created successfully',
+        payoutId: payout.batch_header.payout_batch_id,
+      });
+    }
+  });
 };
