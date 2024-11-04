@@ -21,7 +21,7 @@ const cookieParser = require('cookie-parser');
 const socketHandler = require('./sockets/socketHandler'); // Import socket handler
 
 // Socket Server
-const server = require('http').createServer(app);
+const server = require('https').createServer(app);
 
 
 require('dotenv').config();
