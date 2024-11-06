@@ -1,5 +1,5 @@
 const express = require('express');
-const { createCustomerAndPaymentIntent,withdrawFunds,processRefund } = require('../controllers/PaymentController');
+const { createCustomerAndPaymentIntent,withdrawFunds,processRefund,createPayment,executePayment,cancelPayment,createPayout } = require('../controllers/PaymentController');
 
 const router = express.Router();
 
@@ -15,16 +15,16 @@ router.post('/refund', processRefund);
 // Paypal Routes
 
 // Route to create a payment (checkout)
-router.get('/pay', paypalController.createPayment);
+router.get('/pay', createPayment);
 
 // Route to handle successful payment
-router.get('/success', paypalController.executePayment);
+router.get('/success', executePayment);
 
 // Route to handle payment cancellation
-router.get('/cancel', paypalController.cancelPayment);
+router.get('/cancel', cancelPayment);
 
 // Route to create a payout (withdrawal)
-router.post('/payout', paypalController.createPayout);
+router.post('/payout', createPayout);
 
 
 module.exports = router;
