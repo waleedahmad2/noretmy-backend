@@ -18,20 +18,15 @@ const paymentRoutes = require('./routes/paymentRoutes');
 const { uploadFiles, uploadImages } = require('./controllers/uploadController');
 const upload = require('./config/multer-cloudinary-storage');
 const cookieParser = require('cookie-parser');
-const socketHandler = require('./sockets/socketHandler'); 
+const socketHandler = require('./sockets/socketHandler'); // Import socket handler
 
-// Socket Server
-
-
+require('dotenv').config();
 
 const app = express();
 
-const server = require('https').createServer(app);
-require('dotenv').config();
-
 const allowedOrigins = [
   'http://localhost:8081', 
-  'http://localhost:3000'
+  'https://your-web-app-domain.com'
 ];
 
 const corsOptions = {
@@ -81,12 +76,6 @@ app.get('/', (req, res) => {
 //   })
 // );
 
-// paypal.configure({
-//   mode: 'sandbox', // Use 'sandbox' for testing, 'live' for production
-//   client_id: process.env.PAYPAL_CLIENT_ID,
-//   client_secret: process.env.PAYPAL_CLIENT_SECRET,
-// });
-
 // Route handlers
 app.use('/api', uploadRoutes);
 app.use('/api/auth', authRoutes);
@@ -100,7 +89,6 @@ app.use('/api/contact', contactRoutes);
 app.use('/api/payment', paymentRoutes);
 
 
-
 // Error handling middleware
 app.use((err, req, res, next) => {
   const errorStatus = err.status || 500;
@@ -108,17 +96,18 @@ app.use((err, req, res, next) => {
   return res.status(errorStatus).send(errorMessage);
 });
 
-// // Create HTTP server and integrate with Socket.io
-// const io = require('socket.io')(server, {
-//   cors: corsOptions 
-// });
+// Create HTTP server and integrate with Socket.io
+const server = require('http').createServer(app);
+const io = require('socket.io')(server, {
+  cors: {
+    origin: ['http://localhost:8081', 'http://localhost:3001'], // List allowed origins here
+    credentials: true,
+  }
+});
 
-// // Initialize socket handler with the io instance
-// socketHandler(io);
+// Initialize socket handler with the io instance
+socketHandler(io);
 
 // Start server
 const PORT = process.env.PORT || 5001;
 server.listen(PORT, '0.0.0.0', () => console.log(`Server running on port ${PORT}`));
-
-
-
