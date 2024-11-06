@@ -9,6 +9,7 @@ const orderSchema = new mongoose.Schema({
    sellerId:{type:String,required:true},
    buyerId:{type:String,required:true},
    isCompleted:{type:Boolean,default:false},
+   isCancelled :{type:Boolean,default:false},
    payment_intent:{type:String,required:true},
 
 }, {

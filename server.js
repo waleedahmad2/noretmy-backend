@@ -18,7 +18,7 @@ const paymentRoutes = require('./routes/paymentRoutes');
 const { uploadFiles, uploadImages } = require('./controllers/uploadController');
 const upload = require('./config/multer-cloudinary-storage');
 const cookieParser = require('cookie-parser');
-const socketHandler = require('./sockets/socketHandler'); // Import socket handler
+const socketHandler = require('./sockets/socketHandler'); 
 
 // Socket Server
 const server = require('https').createServer(app);
@@ -30,7 +30,7 @@ const app = express();
 
 const allowedOrigins = [
   'http://localhost:8081', 
-  'https://your-web-app-domain.com'
+  'http://localhost:3000/'
 ];
 
 const corsOptions = {
