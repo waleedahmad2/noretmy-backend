@@ -21,12 +21,13 @@ const cookieParser = require('cookie-parser');
 const socketHandler = require('./sockets/socketHandler'); 
 
 // Socket Server
-const server = require('https').createServer(app);
 
 
 require('dotenv').config();
 
 const app = express();
+const server = require('https').createServer(app);
+
 
 const allowedOrigins = [
   'http://localhost:8081', 
