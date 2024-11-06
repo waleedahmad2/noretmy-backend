@@ -1,7 +1,7 @@
 
 
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-const paypal = require('paypal-rest-sdk');
+// const paypal = require('paypal-rest-sdk');
 const Freelancer = require('../models/Freelancer');
 
 

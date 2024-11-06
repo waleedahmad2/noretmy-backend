@@ -81,11 +81,11 @@ app.get('/', (req, res) => {
 //   })
 // );
 
-paypal.configure({
-  mode: 'sandbox', // Use 'sandbox' for testing, 'live' for production
-  client_id: process.env.PAYPAL_CLIENT_ID,
-  client_secret: process.env.PAYPAL_CLIENT_SECRET,
-});
+// paypal.configure({
+//   mode: 'sandbox', // Use 'sandbox' for testing, 'live' for production
+//   client_id: process.env.PAYPAL_CLIENT_ID,
+//   client_secret: process.env.PAYPAL_CLIENT_SECRET,
+// });
 
 // Route handlers
 app.use('/api', uploadRoutes);
