@@ -13,6 +13,8 @@ const uploadRoutes = require('./routes/uploadRoutes');
 const conversationRoutes = require('./routes/conversationRoutes');
 const contactRoutes = require('./routes/contactRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
+const sellerRoutes = require('./routes/sellerRoutes');
+
 
 
 const { uploadFiles, uploadImages } = require('./controllers/uploadController');
@@ -87,6 +89,7 @@ app.use('/api/messages', messageRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/payment', paymentRoutes);
+app.use('/api/seller', sellerRoutes);
 
 
 // Error handling middleware
