@@ -25,17 +25,18 @@ const createConverstion = async (req, res,next) => {
       // Use findOne() to retrieve a single conversation document
       const conversation = await Conversation.findOne({ id: req.params.id });
   
-      // If no conversation is found, return a 404
+      // If no conversation is found, return a 204 (No Content) status
       if (!conversation) {
-        return res.status(404).send("No conversation available");
+        return res.status(204).send(); // 204 means no content, so no body will be returned
       }
   
       // Return the conversation if found
-      res.status(200).send(conversation);
+      res.status(200).json(conversation);
     } catch (error) {
       next(error);
     }
   };
+  
   
   
   const getConverstions =async  (req, res,next) => {
