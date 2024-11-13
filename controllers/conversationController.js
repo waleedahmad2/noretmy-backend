@@ -4,8 +4,8 @@ const createConverstion = async (req, res,next) => {
     // Implementation
     const newConversation= new Conversation({
       id: req.isSeller ? req.userId + req.body.to : req.body.to+req.userId,
-      sellerId: req.userId,
-      buyerId : req.body.to,
+      sellerId: req.isSeller ? req.userId :req.body.to,
+      buyerId :req.isSeller ? req.body.to :req.userId,
       readBySeller:req.isSeller,
       readByBuyer: !req.isSeller,
 
@@ -20,7 +20,7 @@ const createConverstion = async (req, res,next) => {
     }
   };
   
-  const getConverstion = async (req, res, next) => {
+  const getConversation = async (req, res, next) => {
     try {
       // Use findOne() to retrieve a single conversation document
       const conversation = await Conversation.findOne({ id: req.params.id });
