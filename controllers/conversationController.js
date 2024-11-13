@@ -10,7 +10,7 @@ const createConverstion = async (req, res,next) => {
       readByBuyer: !req.isSeller,
 
     })
-    try {
+    try { 
       const savedConversation= await newConversation.save();
 
       res.status(201).send(savedConversation);
@@ -20,18 +20,23 @@ const createConverstion = async (req, res,next) => {
     }
   };
   
-  const getConverstion = async (req, res,next) => {
-    // Implementation
-
+  const getConverstion = async (req, res, next) => {
     try {
-      const conversation=  await Conversation.find({id:req.params.id});
-
-      if(!conversation) res.status(404).send("No conversation available");
-      res.status(200).send(conversation);      
+      // Use findOne() to retrieve a single conversation document
+      const conversation = await Conversation.findOne({ id: req.params.id });
+  
+      // If no conversation is found, return a 404
+      if (!conversation) {
+        return res.status(404).send("No conversation available");
+      }
+  
+      // Return the conversation if found
+      res.status(200).send(conversation);
     } catch (error) {
-      next(error)
+      next(error);
     }
   };
+  
   
   const getConverstions =async  (req, res,next) => {
     // Implementation
