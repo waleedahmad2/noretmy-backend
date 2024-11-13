@@ -4,8 +4,8 @@ const createConverstion = async (req, res,next) => {
     // Implementation
     const newConversation= new Conversation({
       id: req.isSeller ? req.userId + req.body.to : req.body.to+req.userId,
-      sellerId: req.isSeller ? req.userId :req.body.to,
-      buyerId :req.isSeller ? req.body.to :req.userId,
+      sellerId: req.userId,
+      buyerId : req.body.to,
       readBySeller:req.isSeller,
       readByBuyer: !req.isSeller,
 
