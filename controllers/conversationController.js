@@ -20,7 +20,7 @@ const createConverstion = async (req, res,next) => {
     }
   };
   
-  const getConversation = async (req, res, next) => {
+  const getConverstion = async (req, res, next) => {
     try {
       // Use findOne() to retrieve a single conversation document
       const conversation = await Conversation.findOne({ id: req.params.id });
