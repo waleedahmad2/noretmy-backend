@@ -10,6 +10,8 @@ const userSchema = new mongoose.Schema({
   isVerified: { type: Boolean, default: false },
   isSeller: { type: Boolean, default: false },
   isCompany :{type:Boolean,default:false},
+  isVerifiedSeller:{type:Boolean,default:false},
+  documentImages: [{ type: String, required : false }],
   isBlocked: { type: Boolean, default: false },
   isWarned: { type: Boolean, default: false },
   verificationToken: { type: String },

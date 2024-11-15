@@ -1,6 +1,7 @@
 const cloudinary = require('../config/cloudinaryConfig');
 const { Readable } = require('stream');
 const multer = require('multer');
+const User = require('../models/User');
 
 // Use memory storage for file uploads
 const storage = multer.memoryStorage();
@@ -54,7 +55,44 @@ const uploadImages = async (req, res) => {
   }
 };
 
+
+const uploadandVerifyImages= async (req,res)=>{
+
+
+
+  try {
+
+    const documentUrls = await uploadImages(req,res);
+
+    const userId= req.userId;
+  
+    const user= await User.findById(userId);
+  
+    if(!user){
+        return res.status(404).json({error : "User not found!"});
+    }
+  
+    user.documentImages = [...user.documentImages, ...documentUrls];
+    user.isVerifiedSeller = true
+  
+    await user.save();
+  
+    res.json({
+      success: true,
+      urls: documentUrls,
+      message: 'Documents uploaded and user verified successfully'
+    });
+  
+    
+  } catch (error) {
+    res.status(500).json({error: error.message || "Internal Server Error"})
+  }
+
+
+}
+
 module.exports = {
   upload,
-  uploadImages
+  uploadImages,
+  uploadandVerifyImages
 };
