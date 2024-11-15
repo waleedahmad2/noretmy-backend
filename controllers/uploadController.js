@@ -58,15 +58,16 @@ const uploadImages = async (req, res) => {
 
 const uploadandVerifyImages= async (req,res)=>{
 
-
-
   try {
 
     const documentUrls = await uploadImages(req,res);
 
     const userId= req.userId;
+    console.log("Here in verify")
   
     const user= await User.findById(userId);
+    console.log("Here after verify")
+    
   
     if(!user){
         return res.status(404).json({error : "User not found!"});

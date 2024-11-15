@@ -6,6 +6,6 @@ const { upload, uploadImages ,uploadandVerifyImages} = require('../controllers/u
 // Use the imported upload middleware directly
 router.post('/upload', upload, uploadImages);
 
-router.post('/upload/verify',verifyToken,upload,uploadandVerifyImages)
+router.post('/upload/verify',verifyToken,upload, uploadandVerifyImages)
 
 module.exports = router;
