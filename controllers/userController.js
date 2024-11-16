@@ -51,9 +51,9 @@ const getVerifiedSellers = async (req, res) => {
       '_id documentImages isCompany isBlocked isWarned' 
     );
 
-    res.status(200).json({
-      verifiedSellers,
-    });
+    res.status(200).json(
+      verifiedSellers
+    );
 
   } catch (error) {
     console.error('Error fetching verified sellers:', error);
