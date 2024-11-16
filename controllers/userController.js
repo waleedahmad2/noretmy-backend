@@ -48,7 +48,7 @@ const getVerifiedSellers = async (req, res) => {
 
     const verifiedSellers = await User.find(
       { isSeller: true, isVerifiedSeller: true },
-      '_id documentImages isCompany isBlocked isWarned' 
+      '_id fullName documentImages isCompany isBlocked isWarned' 
     );
 
     res.status(200).json(
