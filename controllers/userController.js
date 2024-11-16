@@ -52,10 +52,9 @@ const getVerifiedSellers = async (req, res) => {
     );
 
     res.status(200).json({
-      success: true,
       data: verifiedSellers,
     });
-    
+
   } catch (error) {
     console.error('Error fetching verified sellers:', error);
     res.status(500).json({
