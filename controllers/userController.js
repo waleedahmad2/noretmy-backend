@@ -43,6 +43,29 @@ const getTotalUsers = async (req, res) => {
 };
 
 
+const getVerifiedSellers = async (req, res) => {
+  try {
+
+    const verifiedSellers = await User.find(
+      { isSeller: true, isVerifiedSeller: true },
+      '_id documentImages isCompany isBlocked isWarned' 
+    );
+
+    res.status(200).json({
+      success: true,
+      data: verifiedSellers,
+    });
+    
+  } catch (error) {
+    console.error('Error fetching verified sellers:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal Server Error',
+    });
+  }
+};
+
+
 // Warn User Controller
 const warnUser = async (req, res) => {
   try {
@@ -90,4 +113,4 @@ const blockUser = async (req, res) => {
 };
 
 
-module.exports = { deleteUser ,getTotalUsers,getAllUsers, warnUser, blockUser};
+module.exports = { deleteUser ,getTotalUsers,getAllUsers, warnUser, blockUser,getVerifiedSellers};
