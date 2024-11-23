@@ -196,7 +196,7 @@ const updateSingleAttribute = async (req, res) => {
 
 const getSellerData = async (req, res) => {
   try {
-    const { userId } = req.userId; 
+    const { userId } = req; 
     if (!userId) {
       return res.status(400).json({ message: 'User ID is required' });
     }
