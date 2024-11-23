@@ -1,5 +1,7 @@
 const User = require("../models/User");
 const { sendUserNotificationEmail } = require("../services/emailService");
+const UserProfile = require('../models/UserProfile');
+
 
 const getAllUsers = async (req, res) => {
     try {
@@ -112,4 +114,82 @@ const blockUser = async (req, res) => {
 };
 
 
-module.exports = { deleteUser ,getTotalUsers,getAllUsers, warnUser, blockUser,getVerifiedSellers};
+
+
+
+// Route to Create or Update User Profile
+
+// Controller to create or update user profile
+const createOrUpdateProfile = async (req, res) => {
+  try {
+    const { userId, profilePicture, location, description, skills } = req.body;
+
+    // Check if profile exists for this user
+    let userProfile = await UserProfile.findOne({ userId });
+
+    if (userProfile) {
+      // If profile exists, update it
+      userProfile.profilePicture = profilePicture;
+      userProfile.location = location;
+      userProfile.description = description;
+      userProfile.skills = skills;
+    } else {
+      // If profile doesn't exist, create a new one
+      userProfile = new UserProfile({
+        userId,
+        profilePicture,
+        location,
+        description,
+        skills
+      });
+    }
+
+    // Save the profile to the database
+    await userProfile.save();
+
+    res.status(200).json({ message: 'User profile updated successfully', data: userProfile });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+
+
+const updateSingleAttribute = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const updates = req.body;  // This will contain the fields to be updated
+    
+    // Find the user profile by userId
+    let userProfile = await UserProfile.findOne({ userId });
+
+    if (!userProfile) {
+      // If no profile is found, create a new one
+      userProfile = new UserProfile({
+        userId,
+        ...updates // Apply the updates directly to the new profile
+      });
+    } else {
+      // If the profile exists, update only the fields passed in the request body
+      for (let key in updates) {
+        if (updates[key] !== undefined) {
+          userProfile[key] = updates[key];
+        }
+      }
+    }
+
+    // Save the new or updated profile
+    await userProfile.save();
+
+    res.status(200).json({ message: 'User profile updated successfully', data: userProfile });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+
+
+
+module.exports = { deleteUser ,getTotalUsers,getAllUsers, warnUser, blockUser,getVerifiedSellers,updateSingleAttribute,createOrUpdateProfile};
