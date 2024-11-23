@@ -148,29 +148,39 @@ const getUserJobs = async (req, res) => {
   };
   
 
-  const deleteJob= async (req,res)=>{
-    try{
-
-        const gig= await Job.findById(req.params.id);
-
-        if(!gig) return   res.status(404).json({ message: "No gig found" })
-            console.log(req.id);
-
-        if(gig.sellerId !== req.userId) return   res.status(403).json({ message: "You can only delete your gig" });
-
-
-        await Job.findByIdAndDelete(req.params.id);
-
-        res.status(200).send("Gig has been deleted");
-
-
-
+  const deleteJob = async (req, res) => {
+    try {
+      const { userId } = req;
+  
+      // Verify that userId exists
+      if (!userId) {
+        return res.status(400).send("User is not verified");
+      }
+  
+      const gig = await Job.findById(req.params.id);
+  
+      // Check if gig exists
+      if (!gig) {
+        return res.status(404).json({ message: "No gig found" });
+      }
+  
+      // Check if the logged-in user is the owner of the gig
+      if (gig.sellerId !== userId) {
+        return res.status(403).json({ message: "You can only delete your gig" });
+      }
+  
+      // Delete the gig
+      await Job.findByIdAndDelete(req.params.id);
+  
+      res.status(200).send("Gig has been deleted");
+    } catch (error) {
+      if (error.name === "CastError") {
+        return res.status(400).json({ message: "Invalid Job ID" });
+      }
+      res.status(500).json({ message: "Server Error", error: error.message });
     }
-    catch(error){
-        res.status(500).json({ message: "Server Error", error: error.message });
+  };
 
-    }
-
-  }
+  
 
 module.exports = { createJob ,getAllJobs,getUserJobs,getFeaturedJobs,deleteJob};
