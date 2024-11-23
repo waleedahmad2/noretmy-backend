@@ -158,7 +158,7 @@ const createOrUpdateProfile = async (req, res) => {
 
 const updateSingleAttribute = async (req, res) => {
   try {
-    const { userId } = req.params;
+    const { userId } = req;
     const updates = req.body;  // This will contain the fields to be updated
     
     // Find the user profile by userId

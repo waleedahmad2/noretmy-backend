@@ -9,8 +9,8 @@ router.put('/block/:userId', blockUser);
 router.delete("/delete/:id",verifyToken, deleteUser);
 router.get("/total-users",getTotalUsers);
 router.get('/verified-sellers', getVerifiedSellers);
-router.post('/user/profile', createOrUpdateProfile);
-router.put('/user/profile/:userId', updateSingleAttribute);
+router.post('/profile', createOrUpdateProfile);
+router.put('/profile/',verifyToken, updateSingleAttribute);
 
 
 module.exports=router
