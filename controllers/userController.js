@@ -207,23 +207,27 @@ const getSellerData = async (req, res) => {
       username: null,
       createdAt: null,
       location: null,
-      description: null,
+      profileHeadline: '',
+      profilePicture:'',
+      description: '',
       skills: [],
       reviews: [],
       averageRating: 0,
     };
 
     // Fetch user and profile data
-    const user = await User.findById({_id:userId}).select('fullName username createdAt');
+    const user = await User.findById({_id:userId}).select('fullName username _createdAt');
     if (user) {
       responseData.fullName = user.fullName;
       responseData.username = user.username;
-      responseData.createdAt = user.createdAt;
+      responseData.createdAt = user._createdAt;
     }
 
-    const userProfile = await UserProfile.findOne({ userId }).select('location description skills');
+    const userProfile = await UserProfile.findOne({ userId }).select('location profilePicture profileHeadline description skills');
     if (userProfile) {
       responseData.location = userProfile.location;
+      responseData.profileHeadline=userProfile.profileHeadline,
+      responseData.profilePicture = userProfile.profilePicture,
       responseData.description = userProfile.description;
       responseData.skills = userProfile.skills;
     }
