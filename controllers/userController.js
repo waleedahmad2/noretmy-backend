@@ -182,7 +182,7 @@ const updateSingleAttribute = async (req, res) => {
     // Save the new or updated profile
     await userProfile.save();
 
-    res.status(200).json({ message: 'User profile updated successfully', data: userProfile });
+    res.status(200).json(userProfile );
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error', error: error.message });
