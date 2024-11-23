@@ -197,6 +197,9 @@ const updateSingleAttribute = async (req, res) => {
 const getSellerData = async (req, res) => {
   try {
     const { userId } = req.userId; 
+    if (!userId) {
+      return res.status(400).json({ message: 'User ID is required' });
+    }
 
     // Initialize the response object
     let responseData = {
@@ -211,7 +214,7 @@ const getSellerData = async (req, res) => {
     };
 
     // Fetch user and profile data
-    const user = await User.findById({id:userId}).select('fullName username createdAt');
+    const user = await User.findById({_id:userId}).select('fullName username createdAt');
     if (user) {
       responseData.fullName = user.fullName;
       responseData.username = user.username;
