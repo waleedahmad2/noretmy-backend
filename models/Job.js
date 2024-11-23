@@ -5,14 +5,14 @@ const jobSchema = new mongoose.Schema({
     location: { type: String, required: true },
     cat: { type: String, required: true },
     description: { type: String, required: true },
-    keywords: [{ type: String, required: true }],  // Array of strings
-    whyChooseMe: { type: String, required: true }, // Changed to string
+    keywords: [{ type: String, required: true }], 
+    whyChooseMe: { type: String, required: true }, 
     pricingPlan: {
         basic: {
             title: { type: String },
             description: { type: String },
             price: { type: Number },
-            deliveryTime: { type: Number } // e.g., "24 hours", "3 days", etc.
+            deliveryTime: { type: Number } 
         },
         premium: {
             title: { type: String },

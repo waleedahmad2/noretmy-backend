@@ -1,6 +1,8 @@
 const User = require("../models/User");
 const { sendUserNotificationEmail } = require("../services/emailService");
 const UserProfile = require('../models/UserProfile');
+const Reviews = require('../models/Review');
+const Job = require('../models/Job');
 
 
 const getAllUsers = async (req, res) => {
@@ -192,4 +194,78 @@ const updateSingleAttribute = async (req, res) => {
 
 
 
-module.exports = { deleteUser ,getTotalUsers,getAllUsers, warnUser, blockUser,getVerifiedSellers,updateSingleAttribute,createOrUpdateProfile};
+const getSellerData = async (req, res) => {
+  try {
+    const { userId } = req.userId; 
+
+    // Initialize the response object
+    let responseData = {
+      fullName: null,
+      username: null,
+      createdAt: null,
+      location: null,
+      description: null,
+      skills: [],
+      reviews: [],
+      averageRating: 0,
+    };
+
+    // Fetch user and profile data
+    const user = await User.findById(userId).select('fullName username createdAt');
+    if (user) {
+      responseData.fullName = user.fullName;
+      responseData.username = user.username;
+      responseData.createdAt = user.createdAt;
+    }
+
+    const userProfile = await UserProfile.findOne({ userId }).select('location description skills');
+    if (userProfile) {
+      responseData.location = userProfile.location;
+      responseData.description = userProfile.description;
+      responseData.skills = userProfile.skills;
+    }
+
+    // Fetch gigs posted by the seller
+    const sellerGigs = await Job.find({ sellerId: userId }).select('_id');
+    const gigIds = sellerGigs.map((gig) => gig._id);
+
+    if (gigIds.length > 0) {
+      // Fetch reviews for the seller's gigs
+      const reviews = await Reviews.find({ gigId: { $in: gigIds } });
+      responseData.reviews = reviews.map((review) => ({
+        gigId: review.gigId,
+        star: review.star,
+        desc: review.desc,
+        createdAt: review.createdAt,
+      }));
+
+      // Calculate the average rating
+      if (reviews.length > 0) {
+        responseData.averageRating =
+          reviews.reduce((acc, review) => acc + review.star, 0) / reviews.length;
+      }
+    }
+
+    // Check if no data was found in any of the models
+    const noData =
+      !responseData.fullName &&
+      !responseData.username &&
+      !responseData.location &&
+      !responseData.description &&
+      responseData.skills.length === 0 &&
+      responseData.reviews.length === 0;
+
+    if (noData) {
+      return res.status(404).json({ message: 'No data found for the given seller.' });
+    }
+
+    return res.status(200).json(responseData);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Server error' });
+  }
+};
+
+
+
+module.exports = { deleteUser ,getTotalUsers,getAllUsers, warnUser, blockUser,getVerifiedSellers,updateSingleAttribute,createOrUpdateProfile,getSellerData};
