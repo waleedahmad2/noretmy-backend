@@ -114,13 +114,13 @@ const getAllJobs= async (req,res) =>{
 
 const getUserJobs = async (req, res) => {
     try {
-      const { userId } = req.body; // Extract userId from request body
+      const { userId } = req; 
   
       if (!userId) {
         return res.status(400).json({ message: "User ID is required" });
       }
   
-      const jobs = await Job.find({ sellerId: userId }); // Adjust query field if necessary
+      const jobs = await Job.find({ sellerId: userId }); 
   
       if (!jobs || jobs.length === 0) {
         return res.status(404).json({ message: "No jobs found" });
