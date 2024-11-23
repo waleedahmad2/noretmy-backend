@@ -1,7 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const { deleteUser, getTotalUsers, getAllUsers, warnUser, blockUser, getVerifiedSellers, createOrUpdateProfile, updateSingleAttribute, getSellerData } = require("../controllers/userController"); // Correct
-const {verifyToken}=require("../middleware/jwt")
+const {verifyToken}=require("../middleware/jwt");
+const { upload } = require("../controllers/uploadController");
 
 router.get('/', getAllUsers);
 router.put('/warn/:userId', warnUser);
@@ -10,7 +11,7 @@ router.delete("/delete/:id",verifyToken, deleteUser);
 router.get("/total-users",getTotalUsers);
 router.get('/verified-sellers', getVerifiedSellers);
 router.post('/profile', createOrUpdateProfile);
-router.put('/profile/',verifyToken, updateSingleAttribute);
+router.put('/profile/',verifyToken, upload,updateSingleAttribute);
 router.get('/profile/seller',verifyToken, getSellerData);
 
 

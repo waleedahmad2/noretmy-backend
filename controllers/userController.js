@@ -3,6 +3,7 @@ const { sendUserNotificationEmail } = require("../services/emailService");
 const UserProfile = require('../models/UserProfile');
 const Reviews = require('../models/Review');
 const Job = require('../models/Job');
+const uploadDocuments = require('../controllers/uploadController')
 
 
 const getAllUsers = async (req, res) => {
@@ -158,39 +159,90 @@ const createOrUpdateProfile = async (req, res) => {
 
 
 
+// const updateSingleAttribute = async (req, res) => {
+//   try {
+//     const { userId } = req;
+//     const updates = req.body;  // This will contain the fields to be updated
+    
+//     // Find the user profile by userId
+//     let userProfile = await UserProfile.findOne({ userId });
+
+//     if (!userProfile) {
+//       // If no profile is found, create a new one
+//       userProfile = new UserProfile({
+//         userId,
+//         ...updates // Apply the updates directly to the new profile
+//       });
+//     } else {
+//       // If the profile exists, update only the fields passed in the request body
+//       for (let key in updates) {
+//         if (updates[key] !== undefined) {
+//           userProfile[key] = updates[key];
+//         }
+//       }
+//     }
+
+//     // Save the new or updated profile
+//     await userProfile.save();
+
+//     res.status(200).json(userProfile );
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: 'Server error', error: error.message });
+//   }
+// };
+
+
 const updateSingleAttribute = async (req, res) => {
   try {
     const { userId } = req;
-    const updates = req.body;  // This will contain the fields to be updated
-    
+    const updates = req.body; // Contains fields to be updated (except profilePicture)
+    let profilePictureUrl;
+
+    // Check if a profile picture file is uploaded
+    if (req.files && req.files.profilePicture) {
+      console.log("Uploading profile picture...");
+      const [uploadedUrl] = await uploadDocuments({
+        body: req.body,
+        files: [req.files.profilePicture],
+      });
+
+      profilePictureUrl = uploadedUrl; // URL returned from Cloudinary
+    }
+
     // Find the user profile by userId
     let userProfile = await UserProfile.findOne({ userId });
 
     if (!userProfile) {
-      // If no profile is found, create a new one
+      // If no profile exists, create a new one
       userProfile = new UserProfile({
         userId,
-        ...updates // Apply the updates directly to the new profile
+        ...updates,
+        ...(profilePictureUrl && { profilePicture: profilePictureUrl }), // Add profilePicture if uploaded
       });
     } else {
-      // If the profile exists, update only the fields passed in the request body
+      // Update fields if the profile exists
       for (let key in updates) {
         if (updates[key] !== undefined) {
           userProfile[key] = updates[key];
         }
+      }
+
+      // Update the profile picture if uploaded
+      if (profilePictureUrl) {
+        userProfile.profilePicture = profilePictureUrl;
       }
     }
 
     // Save the new or updated profile
     await userProfile.save();
 
-    res.status(200).json(userProfile );
+    res.status(200).json(userProfile);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error("Error updating profile:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
-
 
 
 
@@ -216,7 +268,7 @@ const getSellerData = async (req, res) => {
     };
 
     // Fetch user and profile data
-    const user = await User.findById({_id:userId}).select('fullName username _createdAt');
+    const user = await User.findById({_id:userId}).select('fullName username createdAt');
     if (user) {
       responseData.fullName = user.fullName;
       responseData.username = user.username;
