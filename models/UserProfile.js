@@ -2,10 +2,10 @@ const mongoose = require('mongoose');
 
 const userProfileSchema = new mongoose.Schema({
   userId: { type: String, required: true, unique: true },
-  profilePicture: { type: String, required: true },
-  location: { type: String, required: true },
-  description: { type: String, required: true },
-  skills: { type: [String], required: true }  // Array of skills
+  profilePicture: { type: String, required: false},
+  location: { type: String, required: false},
+  description: { type: String, required: false },
+  skills: { type: [String], required: false }  // Array of skills
 });
 
 const UserProfile = mongoose.model('UserProfile', userProfileSchema);
