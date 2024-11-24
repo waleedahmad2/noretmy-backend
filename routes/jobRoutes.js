@@ -9,12 +9,17 @@ const upload = multer({ storage });
 
 const router = express.Router();
 
-router.get('/', getAllJobs);
-router.get("/user",verifyToken,getUserJobs);
-router.get("/:id",getGigDetailsController)
-router.post('/add-job', upload.any(), createJob);
-router.get('/feature', getFeaturedJobs);
-router.delete('/:id',verifyToken, deleteJob);
+router.get("/feature", getFeaturedJobs); 
+router.get("/user", verifyToken, getUserJobs); 
+router.get("/:id", getGigDetailsController); 
+
+// More general routes follow
+router.get("/", getAllJobs); 
+
+// Post and delete routes at the end
+router.post("/add-job", upload.any(), createJob); 
+router.delete("/:id", verifyToken, deleteJob); 
+
 
 
 module.exports = router;
