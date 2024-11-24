@@ -193,49 +193,42 @@ const getGigDetails = async (gigId) => {
     // Fetch the gig details using gigId
     const gig = await Job.findById(gigId);
     if (!gig) {
-      throw new Error("Gig not found");
+      return { error: "Gig not found" }; // Return meaningful message
     }
 
     // Fetch the seller's user profile using the sellerId from the gig
-    const seller = await User.findById(gig.sellerId);
-    if (!seller) {
-      throw new Error("Seller not found");
-    }
+    const seller = await User.findById(gig.sellerId) || { fullName: "Unknown Seller", _id: null };
 
     // Fetch the seller's profile picture and full name using the sellerId
-    const userProfile = await UserProfile.findOne({ userId: seller._id.toString() });
-    if (!userProfile) {
-      throw new Error("User profile not found");
-    }
+    const userProfile = await UserProfile.findOne({ userId: seller._id?.toString() }) || { profilePicture: "/default-avatar.png" };
 
     // Fetch all reviews for this gig using gigId
-    const reviews = await Reviews.find({ gigId: gigId });
-    if (!reviews || reviews.length === 0) {
-      throw new Error("No reviews found for this gig");
-    }
+    const reviews = await Reviews.find({ gigId: gigId }) || []; // Empty array if no reviews
 
     // Calculate the average rating (out of 5) from the reviews
     const totalStars = reviews.reduce((sum, review) => sum + review.star, 0);
-    const averageRating = totalStars / reviews.length;
+    const averageRating = reviews.length > 0 ? (totalStars / reviews.length).toFixed(2) : "N/A";
 
     // Structure the data to be returned
     const gigDetails = {
       gig: gig,
       seller: {
-        fullName: seller.fullName,
+        fullName: seller.fullName || "Unknown Seller",
         userId: seller._id,
         profilePicture: userProfile.profilePicture,
       },
       reviews: reviews,
-      averageRating: averageRating.toFixed(2), // rounded to 2 decimal places
+      averageRating: averageRating, // rounded to 2 decimal places
     };
 
     return gigDetails;
   } catch (error) {
     console.error(error.message);
-    return { error: error.message };
+    return { error: "An unexpected error occurred" }; // General error response
   }
 };
+
+
 
 // Controller function to handle gig details route
 const getGigDetailsController = async (req, res) => {
