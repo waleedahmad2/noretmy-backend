@@ -1,6 +1,9 @@
 // controllers/jobController.js
+const mongoose = require('mongoose');
 const Job = require('../models/Job');
-// const { options } = require('../routes/messageRoutes');
+const User = require('../models/User');
+const UserProfile = require('../models/UserProfile');
+const Reviews = require('../models/Reviews');
 
 const createJob = async (req, res) => {
     try {
@@ -181,6 +184,74 @@ const getUserJobs = async (req, res) => {
     }
   };
 
+
+
+
+// Function to get gig details, seller info, and reviews
+const getGigDetails = async (gigId) => {
+  try {
+    // Fetch the gig details using gigId
+    const gig = await Job.findById(gigId);
+    if (!gig) {
+      throw new Error("Gig not found");
+    }
+
+    // Fetch the seller's user profile using the sellerId from the gig
+    const seller = await User.findById(gig.sellerId);
+    if (!seller) {
+      throw new Error("Seller not found");
+    }
+
+    // Fetch the seller's profile picture and full name using the sellerId
+    const userProfile = await UserProfile.findOne({ userId: seller._id.toString() });
+    if (!userProfile) {
+      throw new Error("User profile not found");
+    }
+
+    // Fetch all reviews for this gig using gigId
+    const reviews = await Reviews.find({ gigId: gigId });
+    if (!reviews || reviews.length === 0) {
+      throw new Error("No reviews found for this gig");
+    }
+
+    // Calculate the average rating (out of 5) from the reviews
+    const totalStars = reviews.reduce((sum, review) => sum + review.star, 0);
+    const averageRating = totalStars / reviews.length;
+
+    // Structure the data to be returned
+    const gigDetails = {
+      gig: gig,
+      seller: {
+        fullName: seller.fullName,
+        userId: seller._id,
+        profilePicture: userProfile.profilePicture,
+      },
+      reviews: reviews,
+      averageRating: averageRating.toFixed(2), // rounded to 2 decimal places
+    };
+
+    return gigDetails;
+  } catch (error) {
+    console.error(error.message);
+    return { error: error.message };
+  }
+};
+
+// Controller function to handle gig details route
+const getGigDetailsController = async (req, res) => {
+  const { gigId } = req.params;
+  
+  const gigDetails = await getGigDetails(gigId);
+
+  if (gigDetails.error) {
+    return res.status(404).json({ message: gigDetails.error });
+  }
+
+  res.status(200).json(gigDetails);
+};
+
+
+
   
 
-module.exports = { createJob ,getAllJobs,getUserJobs,getFeaturedJobs,deleteJob};
+module.exports = { createJob ,getAllJobs,getUserJobs,getFeaturedJobs,getGigDetailsController,deleteJob};
