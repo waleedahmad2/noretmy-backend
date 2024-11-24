@@ -239,9 +239,9 @@ const getGigDetails = async (gigId) => {
 
 // Controller function to handle gig details route
 const getGigDetailsController = async (req, res) => {
-  const { gigId } = req.params;
+  const { id } = req.params;
   
-  const gigDetails = await getGigDetails(gigId);
+  const gigDetails = await getGigDetails(id);
 
   if (gigDetails.error) {
     return res.status(404).json({ message: gigDetails.error });
