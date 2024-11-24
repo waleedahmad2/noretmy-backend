@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const Job = require('../models/Job');
 const User = require('../models/User');
 const UserProfile = require('../models/UserProfile');
-const Reviews = require('../models/Reviews');
+const Reviews = require('../models/Review');
 
 const createJob = async (req, res) => {
     try {
