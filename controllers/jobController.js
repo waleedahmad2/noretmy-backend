@@ -188,12 +188,53 @@ const getUserJobs = async (req, res) => {
 
 
 // Function to get gig details, seller info, and reviews
+// const getGigDetails = async (gigId) => {
+//   try {
+//     // Fetch the gig details using gigId
+//     const gig = await Job.findById(gigId);
+//     if (!gig) {
+//       return { error: "Gig not found" }; // Return meaningful message
+//     }
+
+//     // Fetch the seller's user profile using the sellerId from the gig
+//     const seller = await User.findById(gig.sellerId) || { fullName: "Unknown Seller", _id: null };
+
+//     // Fetch the seller's profile picture and full name using the sellerId
+//     const userProfile = await UserProfile.findOne({ userId: seller._id?.toString() }) || { profilePicture: "/default-avatar.png" };
+
+//     // Fetch all reviews for this gig using gigId
+//     const reviews = await Reviews.find({ gigId: gigId }) || []; // Empty array if no reviews
+
+//     // Calculate the average rating (out of 5) from the reviews
+//     const totalStars = reviews.reduce((sum, review) => sum + review.star, 0);
+//     const averageRating = reviews.length > 0 ? (totalStars / reviews.length).toFixed(2) : "N/A";
+
+//     // Structure the data to be returned
+//     const gigDetails = {
+//       gig: gig,
+//       seller: {
+//         fullName: seller.fullName || "Unknown Seller",
+//         userId: seller._id,
+//         profilePicture: userProfile.profilePicture,
+//       },
+//       reviews: reviews,
+//       averageRating: averageRating, // rounded to 2 decimal places
+//     };
+
+//     return gigDetails;
+//   } catch (error) {
+//     console.error(error.message);
+//     return { error: "An unexpected error occurred" }; // General error response
+//   }
+// };
+
+
 const getGigDetails = async (gigId) => {
   try {
     // Fetch the gig details using gigId
     const gig = await Job.findById(gigId);
     if (!gig) {
-      return { error: "Gig not found" }; // Return meaningful message
+      return { error: "Gig not found" };
     }
 
     // Fetch the seller's user profile using the sellerId from the gig
@@ -203,7 +244,22 @@ const getGigDetails = async (gigId) => {
     const userProfile = await UserProfile.findOne({ userId: seller._id?.toString() }) || { profilePicture: "/default-avatar.png" };
 
     // Fetch all reviews for this gig using gigId
-    const reviews = await Reviews.find({ gigId: gigId }) || []; // Empty array if no reviews
+    const reviews = await Reviews.find({ gigId: gigId }) || [];
+
+    // Fetch user details (username and profile picture) for each review
+    const reviewsWithUserDetails = await Promise.all(
+      reviews.map(async (review) => {
+        const user = await User.findById(review.userId) || { username: "Unknown User" };
+        const userProfile = await UserProfile.findOne({ userId: review.userId }) || { profilePicture: "/default-avatar.png" };
+        return {
+          ...review.toObject(),
+          user: {
+            username: user.username,
+            profilePicture: userProfile.profilePicture,
+          },
+        };
+      })
+    );
 
     // Calculate the average rating (out of 5) from the reviews
     const totalStars = reviews.reduce((sum, review) => sum + review.star, 0);
@@ -217,14 +273,14 @@ const getGigDetails = async (gigId) => {
         userId: seller._id,
         profilePicture: userProfile.profilePicture,
       },
-      reviews: reviews,
-      averageRating: averageRating, // rounded to 2 decimal places
+      reviews: reviewsWithUserDetails,
+      averageRating: averageRating,
     };
 
     return gigDetails;
   } catch (error) {
     console.error(error.message);
-    return { error: "An unexpected error occurred" }; // General error response
+    return { error: "An unexpected error occurred" };
   }
 };
 
