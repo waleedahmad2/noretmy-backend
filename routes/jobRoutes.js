@@ -10,8 +10,8 @@ const upload = multer({ storage });
 const router = express.Router();
 
 router.get('/', getAllJobs);
-router.get("/:id",getGigDetailsController)
 router.get("/user",verifyToken,getUserJobs);
+router.get("/:id",getGigDetailsController)
 router.post('/add-job', upload.any(), createJob);
 router.get('/feature', getFeaturedJobs);
 router.delete('/:id',verifyToken, deleteJob);
