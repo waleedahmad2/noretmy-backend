@@ -9,7 +9,7 @@ const orderSchema = new mongoose.Schema({
    sellerId:{type:String,required:true},
    buyerId:{type:String,required:true},
    status :{type:String,required:true},
-   orderRequiremnts :{type:String,required:false},
+   orderRequirements :{type:String,required:false},
    attachments:[{ type: String,required:false }],
    isCompleted:{type:Boolean,default:false},
    isCancelled :{type:Boolean,default:false},
