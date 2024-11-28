@@ -9,7 +9,6 @@ const createOrder = async (req, res) => {
 
     // Extract data from the request body
     const {userId} =req;
-    const buyerId=userId;
 
     const { gigId, price, } = req.body;
 
@@ -17,18 +16,16 @@ const createOrder = async (req, res) => {
 
 
     // Validate required fields
-    if (!gigId || !price  || !buyerId ) {
+    if (!gigId || !price  || !userId ) {
       return res.status(400).json({ message: "All required fields must be provided." });
     }
 
     // Create a new order
     const newOrder = new Order({
       gigId :gigId,
-      img :gig.img,
-      title:gig.title,
       price:price,
       sellerId :gig.sellerId, // Use the sellerId from the request body
-      buyerId :buyerId, // Use the buyerId from the request body
+      buyerId :userId, // Use the buyerId from the request body
       payment_intent :"Temp"
     });
 
