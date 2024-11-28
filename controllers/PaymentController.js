@@ -52,14 +52,48 @@ exports.createCustomerAndPaymentIntent = async (req, res) => {
 
 
 
+exports.createCustomerAndPaymentIntentUtil = async (amount, email) => {
+  if (!amount || typeof amount !== 'number' || amount <= 0) {
+    throw new Error('Invalid amount');
+  }
+
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    throw new Error('Invalid email');
+  }
+
+  try {
+    // Check if the customer already exists (optional step)
+    let customer = await stripe.customers.list({
+      email: email,
+      limit: 1,
+    });
+
+    if (customer.data.length > 0) {
+      // If customer exists, use the existing customer
+      customer = customer.data[0];
+    } else {
+      // Otherwise, create a new customer
+      customer = await stripe.customers.create({
+        email,
+      });
+    }
+
+    // Create a Payment Intent linked to the customer
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount,
+      currency: 'usd',
+      customer: customer.id,
+      payment_method_types: ['card'],
+    });
+
+    return {  paymentIntent };
+  } catch (error) {
+    console.error('Error creating customer and payment intent:', error);
+    throw new Error('Failed to create payment intent');
+  }
+};
 
 
-
-
-
-
-
-// Process a Withdrawal Request
 exports.withdrawFunds = async (req, res) => {
     const { email, amount } = req.body; // Freelancer's email and withdrawal amount
 

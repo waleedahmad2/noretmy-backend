@@ -1,6 +1,7 @@
 const Job = require("../models/Job");
 const Order = require("../models/Order"); // Assuming your model is named 'Order'
 const dayjs=require("dayjs");
+const { createCustomerAndPaymentIntentUtil } = require("./PaymentController");
 
 // Controller to create a new order
 const createOrder = async (req, res) => {
@@ -10,10 +11,11 @@ const createOrder = async (req, res) => {
     // Extract data from the request body
     const {userId} =req;
 
-    const { gigId, price,status } = req.body;
+    const { gigId, price,status,email } = req.body;
 
     const gig= await Job.findById(gigId);
 
+    
 
     // Validate required fields
     if (!gigId || !price  || !userId || !status ) {
@@ -33,8 +35,10 @@ const createOrder = async (req, res) => {
     // Save the order to the database
     const savedOrder = await newOrder.save();
 
+   const payment_intent = await  createCustomerAndPaymentIntentUtil(price,email);
+
     // Respond with the saved order
-    res.status(201).json(savedOrder);
+    res.status(201).json(savedOrder,payment_intent);
   } catch (error) {
     console.error("Error creating order:", error);
     res.status(500).json({ message: "Server error. Please try again later." });
