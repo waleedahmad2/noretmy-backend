@@ -179,7 +179,7 @@ exports.handleStripeWebhook = async (req, res) => {
   let event;
 
   try {
-    // Verify the webhook signature to ensure the event came from Stripe
+    // Ensure the request body is raw (for signature verification)
     event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
 
     // Handle different event types
@@ -207,35 +207,51 @@ exports.handleStripeWebhook = async (req, res) => {
 async function handlePaymentIntentSucceeded(paymentIntent) {
   const { id, amount_received, payment_method } = paymentIntent;
 
-  // Find the order based on payment_intent and update its status
-  const updatedOrder = await Order.findOneAndUpdate(
-    { payment_intent: id },
-    { isCompleted: true,status:"created", paymentMethod: payment_method, amountReceived: amount_received },
-    { new: true }
-  );
+  try {
+    // Find the order based on payment_intent and update its status
+    const updatedOrder = await Order.findOneAndUpdate(
+      { payment_intent: id },
+      { 
+        isCompleted: true,
+        status: "completed",  // Change the status to 'completed' when the payment is successful
+        paymentMethod: payment_method,
+        amountReceived: amount_received 
+      },
+      { new: true }
+    );
 
-  if (updatedOrder) {
-    console.log('Order successfully updated with payment status:', updatedOrder);
-  } else {
-    console.log('Order not found for PaymentIntent ID:', id);
+    if (updatedOrder) {
+      console.log('Order successfully updated with payment status:', updatedOrder);
+    } else {
+      console.log('Order not found for PaymentIntent ID:', id);
+    }
+  } catch (err) {
+    console.error('Error updating order status:', err);
   }
 }
 
 async function handlePaymentIntentFailed(paymentIntent) {
   const { id, last_payment_error } = paymentIntent;
 
-  // Log the failed payment and update the order accordingly
-  console.log('Payment failed for PaymentIntent ID:', id, 'Error:', last_payment_error);
+  try {
+    // Log the failed payment and update the order accordingly
+    console.log('Payment failed for PaymentIntent ID:', id, 'Error:', last_payment_error);
 
-  // Optionally, you could update the order's status to indicate a failed payment
-  const updatedOrder = await Order.findOneAndUpdate(
-    { payment_intent: id },
-    { isCompleted: false, error: last_payment_error.message },
-    { new: true }
-  );
+    // Optionally, update the order's status to indicate a failed payment
+    const updatedOrder = await Order.findOneAndUpdate(
+      { payment_intent: id },
+      { 
+        isCompleted: false, 
+        error: last_payment_error.message 
+      },
+      { new: true }
+    );
 
-  if (updatedOrder) {
-    console.log('Order updated to reflect payment failure:', updatedOrder);
+    if (updatedOrder) {
+      console.log('Order updated to reflect payment failure:', updatedOrder);
+    }
+  } catch (err) {
+    console.error('Error handling failed payment intent:', err);
   }
 }
 
