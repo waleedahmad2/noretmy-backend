@@ -4,6 +4,9 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const Freelancer = require('../models/Freelancer');
 const Order = require('../models/Order'); 
 
+const bodyParser = require('body-parser');
+
+
 
 
 exports.createCustomerAndPaymentIntent = async (req, res) => {
@@ -173,13 +176,13 @@ exports.processRefund = async (req, res) => {
 
 
 // Handle Stripe Webhook events
-exports.handleStripeWebhook = async (req, res) => {
+ exports.handleStripeWebhook = async (req, res) => {
   const sig = req.headers['stripe-signature']; // Get the Stripe signature from the request headers
   const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET; // Get the webhook secret from your environment variables
   let event;
 
   try {
-    // Ensure the request body is raw (for signature verification)
+    // Pass raw body (Buffer) to stripe.webhooks.constructEvent for signature verification
     event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
 
     // Handle different event types
