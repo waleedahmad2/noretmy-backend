@@ -10,13 +10,13 @@ const createOrder = async (req, res) => {
     // Extract data from the request body
     const {userId} =req;
 
-    const { gigId, price, } = req.body;
+    const { gigId, price,status } = req.body;
 
     const gig= await Job.findById(gigId);
 
 
     // Validate required fields
-    if (!gigId || !price  || !userId ) {
+    if (!gigId || !price  || !userId || !status ) {
       return res.status(400).json({ message: "All required fields must be provided." });
     }
 
@@ -26,6 +26,7 @@ const createOrder = async (req, res) => {
       price:price,
       sellerId :gig.sellerId, // Use the sellerId from the request body
       buyerId :userId, // Use the buyerId from the request body
+      status:status,
       payment_intent :"Temp"
     });
 
