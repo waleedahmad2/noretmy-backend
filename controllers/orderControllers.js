@@ -7,9 +7,11 @@ const createOrder = async (req, res) => {
     
   try {
 
-
     // Extract data from the request body
-    const { gigId, price, buyerId, } = req.body;
+    const {userId} =req;
+    const buyerId=userId;
+
+    const { gigId, price, } = req.body;
 
     const gig= await Job.findById(gigId);
 
