@@ -86,7 +86,8 @@ exports.createCustomerAndPaymentIntentUtil = async (amount, email) => {
       payment_method_types: ['card'],
     });
 
-    return {  paymentIntent };
+    return {  payment_intent: paymentIntent.id,  
+      client_secret: paymentIntent.client_secret, };
   } catch (error) {
     console.error('Error creating customer and payment intent:', error);
     throw new Error('Failed to create payment intent');
