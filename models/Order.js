@@ -10,7 +10,7 @@ const orderSchema = new mongoose.Schema({
    orderRequirements :{type:String,required:false},
    attachments:[{ type: String,required:false }],
    isCompleted:{type:Boolean,default:false},
-   payment_intent:{type:String,required:true},
+   payment_intent:{type:String,required :false},
 
 }, {
     timestamps: true
