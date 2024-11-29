@@ -233,12 +233,10 @@ const handlePaymentIntentSucceeded = async (paymentIntent) => {
     console.log('Order successfully updated:', updatedOrder);
 
     // Fetch seller and buyer emails
- // Fetch seller and buyer emails
-
- const [seller, buyer] = await Promise.all([
-  User.findById(updatedOrder.sellerId, 'email'),
-  User.findById(updatedOrder.buyerId, 'email'),
-]);
+    const [seller, buyer] = await Promise.all([
+      User.findById(updatedOrder.sellerId, 'email'),
+      User.findById(updatedOrder.buyerId, 'email'),
+    ]);
 
     if (!seller || !buyer) {
       throw new Error('Seller or buyer not found.');
@@ -248,7 +246,7 @@ const handlePaymentIntentSucceeded = async (paymentIntent) => {
     const buyerEmail = buyer.email;
 
     // Prepare messages
-    const sellerMessage = `
+    const sellerMessage = ` 
       <p>Dear Seller,</p>
       <p>Congratulations! You have received a new order.</p>
       <p><strong>Order Details:</strong></p>
@@ -278,8 +276,8 @@ const handlePaymentIntentSucceeded = async (paymentIntent) => {
 
     // Send notifications
     await Promise.all([
-      sendUserNotificationEmail(sellerEmail, 'invoice', sellerMessage,),
-      sendUserNotificationEmail(buyerEmail, 'invoice', buyerMessage),
+      sendUserNotificationEmail(sellerEmail, 'invoice', sellerMessage, 'seller', updatedOrder),
+      sendUserNotificationEmail(buyerEmail, 'invoice', buyerMessage, 'buyer', updatedOrder),
     ]);
 
     console.log('Notifications sent to both seller and buyer.');
