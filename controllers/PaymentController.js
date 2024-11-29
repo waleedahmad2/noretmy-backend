@@ -234,12 +234,10 @@ const handlePaymentIntentSucceeded = async (paymentIntent) => {
 
     // Fetch seller and buyer emails
  // Fetch seller and buyer emails
- const sellerId = mongoose.Types.ObjectId(updatedOrder.sellerId);
- const buyerId = mongoose.Types.ObjectId(updatedOrder.buyerId);
 
  const [seller, buyer] = await Promise.all([
-  User.findById(sellerId, 'email'),
-  User.findById(buyerId, 'email'),
+  User.findById(updatedOrder.sellerId, 'email'),
+  User.findById(updatedOrder.buyerId, 'email'),
 ]);
 
     if (!seller || !buyer) {
