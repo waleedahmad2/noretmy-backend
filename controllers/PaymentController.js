@@ -234,8 +234,8 @@ const handlePaymentIntentSucceeded = async (paymentIntent) => {
 
     // Fetch seller and buyer emails
     const [seller, buyer] = await Promise.all([
-      User.findById(updatedOrder.sellerId, 'email'),
-      User.findById(updatedOrder.buyerId, 'email'),
+      User.findById({_id:updatedOrder.sellerId}, 'email'),
+      User.findById({_id:updatedOrder.buyerId}, 'email'),
     ]);
 
     if (!seller || !buyer) {
