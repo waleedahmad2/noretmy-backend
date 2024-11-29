@@ -42,11 +42,6 @@ const sendVerificationEmail = async (email, token) => {
 };
 
 
-
-
-const nodemailer = require('nodemailer');
-const { PDFDocument } = require('pdf-lib');
-
 const sendUserNotificationEmail = async (email, type, emailMessage, userType, orderDetails) => {
   const transporter = nodemailer.createTransport({
     service: 'gmail',
