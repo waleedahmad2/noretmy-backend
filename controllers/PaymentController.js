@@ -216,9 +216,9 @@ async function handlePaymentIntentSucceeded(paymentIntent) {
       { payment_intent: id },
       { 
         isCompleted: true,
-        status: "completed",  // Change the status to 'completed' when the payment is successful
+        status: "created",  
         paymentMethod: payment_method,
-        amountReceived: amount_received 
+        amountReceived: amount_received/100
       },
       { new: true }
     );
