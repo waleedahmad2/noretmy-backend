@@ -81,7 +81,7 @@ const sendUserNotificationEmail = async (email, type, emailMessage, userType, or
   } else if (type === 'invoice') {
     const { _id, price, createdAt} = orderDetails;
 
-    subject = `Invoice for Your Order #${orderId}`;
+    subject = `Invoice for Your Order #${_id}`;
     message = `
       <h2 style="text-align: center;">Congratulations! Your order has been successfully placed.</h2>
       <p>Dear ${userType === 'seller' ? 'Seller' : 'Client'},</p>
@@ -89,15 +89,15 @@ const sendUserNotificationEmail = async (email, type, emailMessage, userType, or
       <table style="width: 100%; border-collapse: collapse;">
         <tr>
           <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Order ID</th>
-          <td style="border: 1px solid #ddd; padding: 8px;">${orderId}</td>
+          <td style="border: 1px solid #ddd; padding: 8px;">${_id}</td>
         </tr>
         <tr>
           <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Order Date</th>
-          <td style="border: 1px solid #ddd; padding: 8px;">${orderDate}</td>
+          <td style="border: 1px solid #ddd; padding: 8px;">${createdAt}</td>
         </tr>
         <tr>
           <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Total Amount</th>
-          <td style="border: 1px solid #ddd; padding: 8px;">$${totalAmount.toFixed(2)}</td>
+          <td style="border: 1px solid #ddd; padding: 8px;">$${price.toFixed(2)}</td>
         </tr>
         <tr>
           <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Items</th>
