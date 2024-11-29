@@ -13,6 +13,9 @@ const createOrder = async (req, res) => {
     // Find the gig in the database
     const gig = await Job.findById(gigId);
 
+    const orderPrice = price/100;
+    const feeAndTax = (orderPrice * 0.02) +0.35;
+
     // Validate required fields
     if (!gigId || !price || !userId || !status || !email) {
       return res.status(400).json({ message: "All required fields must be provided." });
@@ -21,7 +24,8 @@ const createOrder = async (req, res) => {
     // Create a new order in the database
     const newOrder = new Order({
       gigId: gigId,
-      price: price,
+      price: feeAndTax,
+      feeAndTax :feeAndTax,
       sellerId: gig.sellerId, // Use the sellerId from the gig
       buyerId: userId, // Use the buyerId from the request
       status: status, // Initial order status
