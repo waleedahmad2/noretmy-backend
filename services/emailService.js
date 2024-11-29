@@ -119,7 +119,6 @@ const sendUserNotificationEmail = async (email, type, emailMessage, userType, or
   const pdfDoc = await PDFDocument.create();
   const page = pdfDoc.addPage([600, 850]);
 
-  const font = await pdfDoc.embedFont(PDFDocument.Font.Helvetica);
   const fontSize = 12;
 
   const text = `
@@ -130,7 +129,6 @@ const sendUserNotificationEmail = async (email, type, emailMessage, userType, or
   page.drawText(text, {
     x: 50,
     y: 800,
-    font,
     size: fontSize,
     maxWidth: 500,
     lineHeight: 15,
