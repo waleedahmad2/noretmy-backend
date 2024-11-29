@@ -79,7 +79,7 @@ const sendUserNotificationEmail = async (email, type, emailMessage, userType, or
       <p>Best regards,<br>The Noretmy Team</p>
     `;
   } else if (type === 'invoice') {
-    const { orderId, totalAmount, orderDate, items } = orderDetails;
+    const { _id, price, createdAt} = orderDetails;
 
     subject = `Invoice for Your Order #${orderId}`;
     message = `
@@ -102,9 +102,9 @@ const sendUserNotificationEmail = async (email, type, emailMessage, userType, or
         <tr>
           <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Items</th>
           <td style="border: 1px solid #ddd; padding: 8px;">
-            <ul>
-              ${items.map(item => `<li>${item}</li>`).join('')}
-            </ul>
+            // <ul>
+            //   ${items.map(item => `<li>${item}</li>`).join('')}
+            // </ul>
           </td>
         </tr>
       </table>
