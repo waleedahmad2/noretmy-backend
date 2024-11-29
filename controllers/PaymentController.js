@@ -286,7 +286,6 @@ const handlePaymentIntentSucceeded = async (paymentIntent) => {
   }
 };
 
-module.exports = handlePaymentIntentSucceeded;
 
 async function handlePaymentIntentFailed(paymentIntent) {
   const { id, last_payment_error } = paymentIntent;
