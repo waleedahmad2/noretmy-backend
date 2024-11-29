@@ -50,6 +50,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 
+app.use('/api/payment', paymentRoutes);
 
 
 app.use(express.json());
