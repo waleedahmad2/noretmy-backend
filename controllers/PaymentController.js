@@ -234,11 +234,13 @@ const handlePaymentIntentSucceeded = async (paymentIntent) => {
 
     // Fetch seller and buyer emails
  // Fetch seller and buyer emails
+ const sellerId = mongoose.Types.ObjectId(updatedOrder.sellerId);
+ const buyerId = mongoose.Types.ObjectId(updatedOrder.buyerId);
 
-  
-  const seller= await User.findById(updatedOrder.sellerId, 'email');
-  const buyer = await User.findById(updatedOrder.buyerId, 'email');
-
+ const [seller, buyer] = await Promise.all([
+  User.findById(sellerId, 'email'),
+  User.findById(buyerId, 'email'),
+]);
 
     if (!seller || !buyer) {
       throw new Error('Seller or buyer not found.');
