@@ -69,6 +69,16 @@ exports.createCustomerAndPaymentIntentUtil = async (amount, email) => {
   }
 
   try {
+    // Calculate the extra charges: 2% of the amount + 0.35 USD
+    const feePercentage = 0.02; // 2%
+    const fixedFee = 0.35; // 0.35 USD
+
+    // Calculate the total amount in dollars first
+    const totalAmountInDollars = amount + (amount * feePercentage) + fixedFee;
+
+    // Convert total amount to cents (Stripe expects amount in cents)
+    const totalAmountInCents = Math.round(totalAmountInDollars * 100);
+
     // Check if the customer already exists (optional step)
     let customer = await stripe.customers.list({
       email: email,
@@ -87,19 +97,22 @@ exports.createCustomerAndPaymentIntentUtil = async (amount, email) => {
 
     // Create a Payment Intent linked to the customer
     const paymentIntent = await stripe.paymentIntents.create({
-      amount,
+      amount: totalAmountInCents,  // Amount is in cents
       currency: 'usd',
       customer: customer.id,
       payment_method_types: ['card'],
     });
 
-    return {  payment_intent: paymentIntent.id,  
-      client_secret: paymentIntent.client_secret, };
+    return { 
+      payment_intent: paymentIntent.id,
+      client_secret: paymentIntent.client_secret,
+    };
   } catch (error) {
     console.error('Error creating customer and payment intent:', error);
     throw new Error('Failed to create payment intent');
   }
 };
+
 
 
 exports.withdrawFunds = async (req, res) => {
