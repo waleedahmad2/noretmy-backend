@@ -24,7 +24,7 @@ const createOrder = async (req, res) => {
     // Create a new order in the database
     const newOrder = new Order({
       gigId: gigId,
-      price: feeAndTax,
+      price: orderPrice,
       feeAndTax :feeAndTax,
       sellerId: gig.sellerId, // Use the sellerId from the gig
       buyerId: userId, // Use the buyerId from the request
