@@ -103,7 +103,6 @@ const sendUserNotificationEmail = async (email, type, emailMessage, userType, or
           <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Items</th>
           <td style="border: 1px solid #ddd; padding: 8px;">
             // <ul>
-            //   ${items.map(item => `<li>${item}</li>`).join('')}
             // </ul>
           </td>
         </tr>
