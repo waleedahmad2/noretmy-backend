@@ -6,7 +6,7 @@ const Order = require('../models/Order');
 const User = require('../models/User');
 
 const bodyParser = require('body-parser');
-const { default: sendUserNotificationEmail } = require('../services/emailService');
+const { sendUserNotificationEmail } = require('../services/emailService');
 
 
 
@@ -278,7 +278,7 @@ const handlePaymentIntentSucceeded = async (paymentIntent) => {
 
     // Send notifications
     await Promise.all([
-      sendUserNotificationEmail(sellerEmail, 'invoice', sellerMessage),
+      sendUserNotificationEmail(sellerEmail, 'invoice', sellerMessage,),
       sendUserNotificationEmail(buyerEmail, 'invoice', buyerMessage),
     ]);
 

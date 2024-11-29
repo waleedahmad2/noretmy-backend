@@ -154,7 +154,6 @@ const sendUserNotificationEmail = async (email, type, emailMessage, userType, or
   await transporter.sendMail(mailOptions);
 };
 
-export default sendUserNotificationEmail;
 
 
 
