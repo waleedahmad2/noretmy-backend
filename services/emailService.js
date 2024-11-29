@@ -1,6 +1,8 @@
 const nodemailer = require('nodemailer');
 require('dotenv').config();
-const pdf = require('html-pdf');
+
+const { PDFDocument } = require('pdf-lib');
+
 
 const sendVerificationEmail = async (email, token) => {
   const transporter = nodemailer.createTransport({
@@ -38,6 +40,7 @@ const sendVerificationEmail = async (email, token) => {
 
   await transporter.sendMail(mailOptions);
 };
+
 
 
 
@@ -79,7 +82,7 @@ const sendUserNotificationEmail = async (email, type, emailMessage, userType, or
       <p>Best regards,<br>The Noretmy Team</p>
     `;
   } else if (type === 'invoice') {
-    const { _id, price, createdAt} = orderDetails;
+    const { _id, price, createdAt } = orderDetails;
 
     subject = `Invoice for Your Order #${_id}`;
     message = `
@@ -112,38 +115,40 @@ const sendUserNotificationEmail = async (email, type, emailMessage, userType, or
     `;
   }
 
-  // Generate PDF HTML
-  pdfHtml = `
-    <html>
-    <body style="font-family: Arial, sans-serif; color: #333;">
-      <div style="max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; background-color: #f9f9f9;">
-        <div style="text-align: center;">
-          <img src="https://res.cloudinary.com/dhcylxn8c/image/upload/v1724607236/niqvh73lpbggjlnx1aeo.png" alt="Noretmy Logo" style="width: 150px; height: 120px;" />
-        </div>
-        ${message}
-      </div>
-    </body>
-    </html>
+  // Create a PDF document
+  const pdfDoc = await PDFDocument.create();
+  const page = pdfDoc.addPage([600, 850]);
+
+  const font = await pdfDoc.embedFont(PDFDocument.Font.Helvetica);
+  const fontSize = 12;
+
+  const text = `
+    ${message}
   `;
 
-  // Generate PDF buffer
-  const pdfBuffer = await new Promise((resolve, reject) => {
-    pdf.create(pdfHtml).toBuffer((err, buffer) => {
-      if (err) reject(err);
-      else resolve(buffer);
-    });
+  // Draw the message text on the page
+  page.drawText(text, {
+    x: 50,
+    y: 800,
+    font,
+    size: fontSize,
+    maxWidth: 500,
+    lineHeight: 15,
   });
+
+  // Serialize the PDF to bytes
+  const pdfBytes = await pdfDoc.save();
 
   // Mail options
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: email,
     subject: subject,
-    html: pdfHtml,
+    html: message, // HTML message content
     attachments: [
       {
         filename: 'invoice.pdf',
-        content: pdfBuffer,
+        content: pdfBytes,
         contentType: 'application/pdf',
       },
     ],
@@ -152,6 +157,7 @@ const sendUserNotificationEmail = async (email, type, emailMessage, userType, or
   // Send the email
   await transporter.sendMail(mailOptions);
 };
+
 
 
 

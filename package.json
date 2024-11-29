@@ -23,6 +23,7 @@
     "nodemailer": "^6.9.14",
     "path": "^0.12.7",
     "paypal-rest-sdk": "^1.8.1",
+    "pdf-lib": "^1.17.1",
     "phantomjs-prebuilt": "^2.1.16",
     "serverless-http": "^3.2.0",
     "socket.io": "^4.7.5",
