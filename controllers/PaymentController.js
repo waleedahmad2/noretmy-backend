@@ -3,8 +3,10 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const Freelancer = require('../models/Freelancer');
 const Order = require('../models/Order'); 
+const User = require('../models/User');
 
 const bodyParser = require('body-parser');
+const { default: sendUserNotificationEmail } = require('../services/emailService');
 
 
 
@@ -207,31 +209,84 @@ exports.processRefund = async (req, res) => {
 };
 
 // Function to handle successful payment intent
-async function handlePaymentIntentSucceeded(paymentIntent) {
+const handlePaymentIntentSucceeded = async (paymentIntent) => {
   const { id, amount_received, payment_method } = paymentIntent;
 
   try {
-    // Find the order based on payment_intent and update its status
+    // Update the order with payment details
     const updatedOrder = await Order.findOneAndUpdate(
       { payment_intent: id },
-      { 
+      {
         isCompleted: true,
-        status: "created",  
+        status: 'created',
         paymentMethod: payment_method,
-        amountReceived: amount_received/100
+        amountReceived: amount_received / 100, // Stripe amounts are in cents
       },
       { new: true }
     );
 
-    if (updatedOrder) {
-      console.log('Order successfully updated with payment status:', updatedOrder);
-    } else {
-      console.log('Order not found for PaymentIntent ID:', id);
+    if (!updatedOrder) {
+      console.error('Order not found for PaymentIntent ID:', id);
+      return;
     }
-  } catch (err) {
-    console.error('Error updating order status:', err);
+
+    console.log('Order successfully updated:', updatedOrder);
+
+    // Fetch seller and buyer emails
+    const [seller, buyer] = await Promise.all([
+      User.findById(updatedOrder.sellerId, 'email'),
+      User.findById(updatedOrder.buyerId, 'email'),
+    ]);
+
+    if (!seller || !buyer) {
+      throw new Error('Seller or buyer not found.');
+    }
+
+    const sellerEmail = seller.email;
+    const buyerEmail = buyer.email;
+
+    // Prepare messages
+    const sellerMessage = `
+      <p>Dear Seller,</p>
+      <p>Congratulations! You have received a new order.</p>
+      <p><strong>Order Details:</strong></p>
+      <ul>
+        <li>Order ID: ${updatedOrder._id}</li>
+        <li>Gig ID: ${updatedOrder.gigId}</li>
+        <li>Price: $${updatedOrder.price}</li>
+        <li>Payment Method: ${updatedOrder.paymentMethod}</li>
+      </ul>
+      <p>Please review the order requirements and start working.</p>
+      <p>Best regards,<br>The Noretmy Team</p>
+    `;
+
+    const buyerMessage = `
+      <p>Dear Buyer,</p>
+      <p>Thank you for your purchase! Your order has been successfully placed.</p>
+      <p><strong>Order Details:</strong></p>
+      <ul>
+        <li>Order ID: ${updatedOrder._id}</li>
+        <li>Gig ID: ${updatedOrder.gigId}</li>
+        <li>Price: $${updatedOrder.price}</li>
+        <li>Payment Method: ${updatedOrder.paymentMethod}</li>
+      </ul>
+      <p>You can view the order details and communicate with the seller through your dashboard.</p>
+      <p>Best regards,<br>The Noretmy Team</p>
+    `;
+
+    // Send notifications
+    await Promise.all([
+      sendUserNotificationEmail(sellerEmail, 'invoice', sellerMessage),
+      sendUserNotificationEmail(buyerEmail, 'invoice', buyerMessage),
+    ]);
+
+    console.log('Notifications sent to both seller and buyer.');
+  } catch (error) {
+    console.error('Error handling payment intent succeeded:', error.message);
   }
-}
+};
+
+module.exports = handlePaymentIntentSucceeded;
 
 async function handlePaymentIntentFailed(paymentIntent) {
   const { id, last_payment_error } = paymentIntent;

@@ -41,7 +41,7 @@ const sendVerificationEmail = async (email, token) => {
 
 
 
-const sendUserNotificationEmail = async (email, type, emailMessage) => {
+const sendUserNotificationEmail = async (email, type, emailMessage, userType, orderDetails) => {
   const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -50,21 +50,22 @@ const sendUserNotificationEmail = async (email, type, emailMessage) => {
     },
   });
 
-  let subject, message;
+  let subject, message, pdfHtml;
 
+  // Different templates based on type and userType
   if (type === 'warn') {
-    subject = 'Warning Notice';
+    subject = userType === 'seller' ? 'Seller Warning Notice' : 'Warning Notice';
     message = `
-      <p>Dear User,</p>
+      <p>Dear ${userType === 'seller' ? 'Seller' : 'Client'},</p>
       <p>We have observed some activities on your account that violate our terms of service. Please be aware that continued violations may result in further action.</p>
       <p>We encourage you to review our guidelines to avoid any future issues.</p>
       <p>Best regards,<br>The Noretmy Team</p>
     `;
   } else if (type === 'block') {
-    subject = 'Account Blocked';
+    subject = userType === 'seller' ? 'Seller Account Blocked' : 'Account Blocked';
     message = `
       <h2 style="text-align: center;">Your account has been disabled</h2>
-      <p>Dear User,</p>
+      <p>Dear ${userType === 'seller' ? 'Seller' : 'Client'},</p>
       <p>We regret to inform you that due to repeated violations of our terms of service, your account has been permanently blocked.</p>
       <p>If you believe this decision was made in error, please contact our support team for further assistance.</p>
       <p>Best regards,<br>The Noretmy Team</p>
@@ -77,10 +78,43 @@ const sendUserNotificationEmail = async (email, type, emailMessage) => {
       <p>${emailMessage}</p>
       <p>Best regards,<br>The Noretmy Team</p>
     `;
+  } else if (type === 'invoice') {
+    const { orderId, totalAmount, orderDate, items } = orderDetails;
+
+    subject = `Invoice for Your Order #${orderId}`;
+    message = `
+      <h2 style="text-align: center;">Congratulations! Your order has been successfully placed.</h2>
+      <p>Dear ${userType === 'seller' ? 'Seller' : 'Client'},</p>
+      <p>Thank you for using Noretmy. Here are your order details:</p>
+      <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+          <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Order ID</th>
+          <td style="border: 1px solid #ddd; padding: 8px;">${orderId}</td>
+        </tr>
+        <tr>
+          <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Order Date</th>
+          <td style="border: 1px solid #ddd; padding: 8px;">${orderDate}</td>
+        </tr>
+        <tr>
+          <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Total Amount</th>
+          <td style="border: 1px solid #ddd; padding: 8px;">$${totalAmount.toFixed(2)}</td>
+        </tr>
+        <tr>
+          <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Items</th>
+          <td style="border: 1px solid #ddd; padding: 8px;">
+            <ul>
+              ${items.map(item => `<li>${item}</li>`).join('')}
+            </ul>
+          </td>
+        </tr>
+      </table>
+      <p>We hope to serve you again soon.</p>
+      <p>Best regards,<br>The Noretmy Team</p>
+    `;
   }
 
-  // HTML for the PDF
-  const pdfHtml = `
+  // Generate PDF HTML
+  pdfHtml = `
     <html>
     <body style="font-family: Arial, sans-serif; color: #333;">
       <div style="max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; background-color: #f9f9f9;">
@@ -93,7 +127,7 @@ const sendUserNotificationEmail = async (email, type, emailMessage) => {
     </html>
   `;
 
-  // Generate PDF from HTML
+  // Generate PDF buffer
   const pdfBuffer = await new Promise((resolve, reject) => {
     pdf.create(pdfHtml).toBuffer((err, buffer) => {
       if (err) reject(err);
@@ -101,24 +135,27 @@ const sendUserNotificationEmail = async (email, type, emailMessage) => {
     });
   });
 
-  // Mail options with PDF attachment
+  // Mail options
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: email,
     subject: subject,
-    html: pdfHtml, // HTML content
+    html: pdfHtml,
     attachments: [
       {
-        filename: 'notification.pdf',
+        filename: 'invoice.pdf',
         content: pdfBuffer,
         contentType: 'application/pdf',
       },
     ],
   };
 
-  // Send the email with attachment
+  // Send the email
   await transporter.sendMail(mailOptions);
 };
+
+export default sendUserNotificationEmail;
+
 
 
 module.exports = { sendVerificationEmail,sendUserNotificationEmail };
