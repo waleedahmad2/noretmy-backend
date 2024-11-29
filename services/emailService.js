@@ -89,7 +89,7 @@ const sendUserNotificationEmail = async (email, type, emailMessage, userType, or
     const { _id, price, createdAt } = orderDetails;
 
     // Convert amount from cents to dollars
-    const amountInDollars = price / 100;
+    const amountInDollars = price;
 
     // Calculate 2% fee and add service charge
     const feePercentage = 0.02;  // 2%
