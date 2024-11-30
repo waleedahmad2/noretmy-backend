@@ -2,7 +2,6 @@ const Job = require("../models/Job");
 const Order = require("../models/Order"); 
 const User = require('../models/User');
 const UserProfile = require('../models/UserProfile');
-const Job = require('../models/Job');  
 
 
 const { createCustomerAndPaymentIntentUtil } = require("./PaymentController");
