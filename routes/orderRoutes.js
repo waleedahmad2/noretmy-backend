@@ -11,7 +11,7 @@ const router = express.Router();
 
 router.post('/',verifyToken,createOrder );
 router.get('/',getOrders );
-router.get("/:id",verifyToken,getUserOrders);
+router.get("/userOrders",verifyToken,getUserOrders);
 router.get("/single/:id",verifyToken,getSingleOrderDetail);
 router.get('/payments/summary', getPaymentsSummary);
 
