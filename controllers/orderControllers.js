@@ -1,7 +1,14 @@
 const Job = require("../models/Job");
-const Order = require("../models/Order"); // Assuming your model is named 'Order'
-const dayjs=require("dayjs");
+const Order = require("../models/Order"); 
+const User = require('../models/User');
+const UserProfile = require('../models/UserProfile');
+const Job = require('../models/Job');  
+
+
 const { createCustomerAndPaymentIntentUtil } = require("./PaymentController");
+
+const dayjs=require("dayjs");
+
 
 // Controller to create a new order
 const createOrder = async (req, res) => {
@@ -75,14 +82,14 @@ const getOrders= async (req,res) =>{
 
 }
 
-const getOrder = async (req, res) => {
+const getUserOrders = async (req, res) => {
     try {
-      const { id } = req.params;
+      const { userId } = req;
       
       // Fetch orders where either sellerId or buyerId matches the provided ID
       //show completed orders only
       const orders = await Order.find({
-        $or: [{ sellerId: id }, { buyerId: id }]
+        $or: [{ sellerId:userId }, { buyerId: userId }]
       });
   
       if (!orders || orders.length === 0) {
@@ -118,6 +125,72 @@ const getOrder = async (req, res) => {
   };
   
 
+
+
+  
+  const getSingleOrderDetail = async (req, res) => {
+    const { orderId } = req.params;
+    const { userId } = req.user; // Assuming userId is available in req.user (e.g., from JWT or session)
+  
+    try {
+      // Find the order by orderId
+      const order = await Order.findOne({ orderId }).exec();
+      if (!order) {
+        return res.status(404).json({ message: 'Order not found' });
+      }
+  
+      // Find the gigTitle from the Job model using gigId from the order
+      const job = await Job.findOne({ _id: order.gigId }).exec();
+      const gigTitle = job ? job.title : null;
+  
+      let userDetails = null; // Initialize to null
+      let otherPartyDetails = null;
+  
+      // Check if the user is the buyer or seller
+      if (userId === order.buyerId) {
+        // User is the buyer, fetch the seller's details
+        userDetails = await User.findById(order.sellerId).exec();
+        otherPartyDetails = await UserProfile.findOne({ userId: order.sellerId }).exec();
+      } else if (userId === order.sellerId) {
+        // User is the seller, fetch the buyer's details
+        userDetails = await User.findById(order.buyerId).exec();
+        otherPartyDetails = await UserProfile.findOne({ userId: order.buyerId }).exec();
+      }
+  
+      // Prepare the order details
+      const orderDetails = {
+        orderId: order.orderId,
+        gigTitle: gigTitle || 'Gig title unavailable', // Fallback if gigTitle is null
+        orderStatus: order.status,
+        orderPrice: order.price,
+        requirements: order.orderRequirements,
+        attachments: order.attachments,
+      };
+  
+      // Prepare user details if available
+      const userDetailsResponse = userDetails
+        ? {
+            userName: userDetails.fullName,
+            userUsername: userDetails.username,
+            userImage: otherPartyDetails ? otherPartyDetails.profilePicture : 'default-image.jpg',
+          }
+        : null;
+  
+      // Build the response object
+      const response = {
+        ...(userDetailsResponse && { userDetails: userDetailsResponse }), // Include only if userDetails exists
+        orderDetails,
+      };
+  
+      // Return the response
+      return res.status(200).json(response);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: 'Internal Server Error' });
+    }
+  };
+  
+ 
   const getPaymentsSummary = async (req, res) => {
     try {
         // Fetch completed orders
@@ -155,5 +228,5 @@ const getOrder = async (req, res) => {
 
 
 module.exports = {
-  createOrder,getOrders,getOrder,getPaymentsSummary
+  createOrder,getOrders,getUserOrders,getPaymentsSummary,getSingleOrderDetail
 };
