@@ -129,7 +129,7 @@ const getUserOrders = async (req, res) => {
   
   const getSingleOrderDetail = async (req, res) => {
     const { id } = req.params;
-    const { userId } = req.user; // Assuming userId is available in req.user (e.g., from JWT or session)
+    const { userId } = req; // Assuming userId is available in req.user (e.g., from JWT or session)
   
     try {
       // Find the order by orderId
