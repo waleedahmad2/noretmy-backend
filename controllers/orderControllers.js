@@ -133,7 +133,7 @@ const getUserOrders = async (req, res) => {
   
     try {
       // Find the order by orderId
-      const order = await Order.findOne({ id }).exec();
+      const order = await Order.findOne({ _id:id }).exec();
       if (!order) {
         return res.status(404).json({ message: 'Order not found' });
       }
