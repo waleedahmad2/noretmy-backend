@@ -128,12 +128,12 @@ const getUserOrders = async (req, res) => {
 
   
   const getSingleOrderDetail = async (req, res) => {
-    const { orderId } = req.params;
+    const { id } = req.params;
     const { userId } = req.user; // Assuming userId is available in req.user (e.g., from JWT or session)
   
     try {
       // Find the order by orderId
-      const order = await Order.findOne({ orderId }).exec();
+      const order = await Order.findOne({ id }).exec();
       if (!order) {
         return res.status(404).json({ message: 'Order not found' });
       }
@@ -158,7 +158,7 @@ const getUserOrders = async (req, res) => {
   
       // Prepare the order details
       const orderDetails = {
-        orderId: order.orderId,
+        orderId: order._id,
         gigTitle: gigTitle || 'Gig title unavailable', // Fallback if gigTitle is null
         orderStatus: order.status,
         orderPrice: order.price,
