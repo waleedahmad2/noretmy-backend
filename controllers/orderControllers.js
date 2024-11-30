@@ -124,16 +124,13 @@ const getUserOrders = async (req, res) => {
   };
   
 
-
-
-  
-  const getSingleOrderDetail = async (req, res) => {
+const getSingleOrderDetail = async (req, res) => {
     const { id } = req.params;
     const { userId } = req; // Assuming userId is available in req.user (e.g., from JWT or session)
   
     try {
       // Find the order by orderId
-      const order = await Order.findOne({ _id:id }).exec();
+      const order = await Order.findById(id).exec();
       if (!order) {
         return res.status(404).json({ message: 'Order not found' });
       }
