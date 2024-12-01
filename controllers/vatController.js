@@ -23,8 +23,10 @@ const fetchAndStoreVATRates = async () => {
             throw new Error("Unexpected response format from API");
         }
 
-        const taxRates = response.data.data; // Adjusting based on VATSense API response structure
+        const taxRates = response.data.data; 
 
+        console.log(taxRates);
+        
         // Process VAT rates
         const operations = taxRates.map((data) => ({
             updateOne: {
