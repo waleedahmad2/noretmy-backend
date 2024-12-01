@@ -3,36 +3,43 @@ const cron = require('node-cron');
 const VATRate = require('../models/Vat'); // VATRate model
 require('dotenv').config();
 
-// API key from your Tax Data API account
-const API_KEY = process.env.API_KEY;
+// API key from your VATSense account
+const API_KEY = process.env.VAT_API_KEY;
 
 // Updated API endpoint for global tax rates
-const TAX_API_URL = `https://api.apilayer.com/tax_data/tax_rates`;
+const TAX_API_URL = `https://api.vatsense.com/1.0/rates`;
 
 // Function to fetch and store VAT rates
 const fetchAndStoreVATRates = async () => {
     try {
         // Fetch global VAT data from the API
         const response = await axios.get(TAX_API_URL, {
-            headers: { 'apikey': API_KEY }
+            auth: {
+                username: 'user', // Basic Auth username
+                password: API_KEY // Use your VATSense API Key here
+            }
         });
 
         // Check the response structure
-        if (!response.data || !response.data.rates) {
+        if (!response.data || !response.data.data) {
             throw new Error("Unexpected response format from API");
         }
 
-        const taxRates = response.data.rates; // Adjusting based on response structure
+        const taxRates = response.data.data; // Adjusting based on VATSense API response structure
 
         // Process VAT rates
-        const operations = Object.entries(taxRates).map(([country, data]) => ({
+        const operations = taxRates.map((data) => ({
             updateOne: {
-                filter: { countryCode: country },
+                filter: { countryCode: data.country_code },
                 update: {
                     $set: {
-                        taxName: data.name,
-                        standardRate: data.standard_rate,
-                        reducedRates: data.reduced_rates || [],
+                        countryName: data.country_name,
+                        standardRate: data.standard.rate,
+                        reducedRates: data.other.map(rate => ({
+                            rate: rate.rate,
+                            description: rate.description,
+                            class: rate.class
+                        })),
                         lastUpdated: new Date(),
                     },
                 },
