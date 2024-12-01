@@ -27,14 +27,9 @@ const fetchAndStoreVATRates = async () => {
 
         const taxRates = response.data.data; // Adjusting based on VATSense API response structure
 
-        // Process VAT rates
+        // Process VAT rates using only the `standard` property
         const operations = taxRates.map((data) => {
             const standardRate = data.standard && data.standard.rate ? data.standard.rate : 'unknown';
-            const reducedRates = data.other ? data.other.map(rate => ({
-                rate: rate.rate || 'unknown',
-                description: rate.description || 'unknown',
-                class: rate.class || 'unknown'
-            })) : [];
 
             return {
                 updateOne: {
@@ -43,7 +38,6 @@ const fetchAndStoreVATRates = async () => {
                         $set: {
                             countryName: data.country_name || 'unknown',
                             standardRate: standardRate,
-                            reducedRates: reducedRates,
                             lastUpdated: new Date(),
                         },
                     },
