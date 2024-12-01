@@ -29,7 +29,7 @@ const fetchAndStoreVATRates = async () => {
 
         // Process VAT rates using only the `standard` property
         const operations = taxRates.map((data) => {
-            const standardRate = data.standard && data.standard.rate ? data.standard.rate : 'unknown';
+            const standardRate = data.standard && data.standard.rate ? data.standard.rate : 0;
 
             return {
                 updateOne: {
