@@ -1,6 +1,6 @@
 const axios = require('axios');
 const cron = require('node-cron');
-const VATRate = require('../models/VATRate'); // VATRate model
+const VATRate = require('../models/Vat'); // VATRate model
 require('dotenv').config();
 
 const APP_ID = process.env.APP_ID;
