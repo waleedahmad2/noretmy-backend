@@ -14,6 +14,11 @@ const conversationRoutes = require('./routes/conversationRoutes');
 const contactRoutes = require('./routes/contactRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const sellerRoutes = require('./routes/sellerRoutes');
+const vatRoutes = require('./routes/vatRoutes');
+
+
+require('./controllers/vatController'); 
+
 
 
 
@@ -91,6 +96,8 @@ app.use('/api/reviews', reviewRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/seller', sellerRoutes);
+app.use('/api/vat', vatRoutes);
+
 
 
 // Error handling middleware
