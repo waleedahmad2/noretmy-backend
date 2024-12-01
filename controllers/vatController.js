@@ -28,25 +28,29 @@ const fetchAndStoreVATRates = async () => {
         const taxRates = response.data.data; // Adjusting based on VATSense API response structure
 
         // Process VAT rates
-        const operations = taxRates.map((data) => ({
-            updateOne: {
-                filter: { countryCode: data.country_code },
-                update: {
-                    $set: {
-                        countryName: data.country_name,
-                        standardRate: data.standard.rate,
-                        // Check if 'other' is not null before mapping
-                        reducedRates: data.other ? data.other.map(rate => ({
-                            rate: rate.rate,
-                            description: rate.description,
-                            class: rate.class
-                        })) : [], // If 'other' is null, use an empty array
-                        lastUpdated: new Date(),
+        const operations = taxRates.map((data) => {
+            const standardRate = data.standard && data.standard.rate ? data.standard.rate : 'unknown';
+            const reducedRates = data.other ? data.other.map(rate => ({
+                rate: rate.rate || 'unknown',
+                description: rate.description || 'unknown',
+                class: rate.class || 'unknown'
+            })) : [];
+
+            return {
+                updateOne: {
+                    filter: { countryCode: data.country_code },
+                    update: {
+                        $set: {
+                            countryName: data.country_name || 'unknown',
+                            standardRate: standardRate,
+                            reducedRates: reducedRates,
+                            lastUpdated: new Date(),
+                        },
                     },
+                    upsert: true, // Insert if not exists
                 },
-                upsert: true, // Insert if not exists
-            },
-        }));
+            };
+        });
 
         // Perform bulk update to save VAT data in MongoDB
         await VATRate.bulkWrite(operations);
