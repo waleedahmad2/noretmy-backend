@@ -3,17 +3,20 @@ const cron = require('node-cron');
 const VATRate = require('../models/Vat'); // VATRate model
 require('dotenv').config();
 
-const APP_ID = process.env.APP_ID;
-const TAX_API_URL = `https://openexchangerates.org/api/taxes.json?app_id=${APP_ID}`;
+const API_KEY = process.env.VAT_API_KEY;
+
+// Updated API endpoint for global tax rates
+const TAX_API_URL = `https://api.apilayer.com/tax_data/tax_rates`;
 
 // Function to fetch and store VAT rates
 const fetchAndStoreVATRates = async () => {
     try {
-        // Fetch VAT data from the API
-        const response = await axios.get(TAX_API_URL);
-        const taxRates = response.data.taxes;
+        const response = await axios.get(TAX_API_URL, {
+            headers: { 'apikey': API_KEY }
+        });
 
-        // Process VAT rates
+        const taxRates = response.data.rates; 
+
         const operations = Object.entries(taxRates).map(([country, data]) => ({
             updateOne: {
                 filter: { countryCode: country },
@@ -25,11 +28,10 @@ const fetchAndStoreVATRates = async () => {
                         lastUpdated: new Date(),
                     },
                 },
-                upsert: true, // Insert if not exists
+                upsert: true,
             },
         }));
 
-        // Perform bulk update
         await VATRate.bulkWrite(operations);
 
         console.log('VAT rates updated successfully.');
