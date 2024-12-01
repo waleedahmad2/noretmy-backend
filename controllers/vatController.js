@@ -6,10 +6,8 @@ require('dotenv').config();
 // API key from your VATSense account
 const API_KEY = process.env.VAT_API_KEY;
 
-// Updated API endpoint for global tax rates
 const TAX_API_URL = `https://api.vatsense.com/1.0/rates`;
 
-// Function to fetch and store VAT rates
 const fetchAndStoreVATRates = async () => {
     try {
         // Fetch global VAT data from the API
