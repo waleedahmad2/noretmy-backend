@@ -6,8 +6,10 @@ require('dotenv').config();
 // API key from your VATSense account
 const API_KEY = process.env.VAT_API_KEY;
 
+// Updated API endpoint for global tax rates
 const TAX_API_URL = `https://api.vatsense.com/1.0/rates`;
 
+// Function to fetch and store VAT rates
 const fetchAndStoreVATRates = async () => {
     try {
         // Fetch global VAT data from the API
@@ -23,10 +25,8 @@ const fetchAndStoreVATRates = async () => {
             throw new Error("Unexpected response format from API");
         }
 
-        const taxRates = response.data.data; 
+        const taxRates = response.data.data; // Adjusting based on VATSense API response structure
 
-        console.log(taxRates);
-        
         // Process VAT rates
         const operations = taxRates.map((data) => ({
             updateOne: {
@@ -35,11 +35,12 @@ const fetchAndStoreVATRates = async () => {
                     $set: {
                         countryName: data.country_name,
                         standardRate: data.standard.rate,
-                        reducedRates: data.other.map(rate => ({
+                        // Check if 'other' is not null before mapping
+                        reducedRates: data.other ? data.other.map(rate => ({
                             rate: rate.rate,
                             description: rate.description,
                             class: rate.class
-                        })),
+                        })) : [], // If 'other' is null, use an empty array
                         lastUpdated: new Date(),
                     },
                 },
