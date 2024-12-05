@@ -10,32 +10,109 @@ const dayjs=require("dayjs");
 
 
 // Controller to create a new order
+// const createOrder = async (req, res) => {
+//   try {
+//     // Extract data from the request body
+//     const { userId } = req;
+//     const { gigId, price, status, email } = req.body;
+
+//     // Find the gig in the database
+//     const gig = await Job.findById(gigId);
+
+//     const orderPrice = price/100;
+//     const feeAndTax = (orderPrice * 0.02) +0.35;
+
+//     // Validate required fields
+//     if (!gigId || !price || !userId || !status || !email) {
+//       return res.status(400).json({ message: "All required fields must be provided." });
+//     }
+
+//     // Create a new order in the database
+//     const newOrder = new Order({
+//       gigId: gigId,
+//       price: orderPrice,
+//       feeAndTax :feeAndTax,
+//       sellerId: gig.sellerId, // Use the sellerId from the gig
+//       buyerId: userId, // Use the buyerId from the request
+//       status: status, // Initial order status
+//       payment_intent: "Temp", // Temporary placeholder for payment intent
+//     });
+
+//     // Save the order to the database
+//     const savedOrder = await newOrder.save();
+
+//     // Create a payment intent using the helper utility
+//     const paymentIntentResponse = await createCustomerAndPaymentIntentUtil(price, email);
+
+//     // Extract the client_secret from the payment intent response
+//     const { client_secret, payment_intent } = paymentIntentResponse;
+
+//     // Update the saved order with the actual payment intent ID
+//     savedOrder.payment_intent = payment_intent;
+//     await savedOrder.save();
+
+//     // Send the response to the frontend
+//     res.status(201).json({
+//       message: "Order created successfully",
+//       order: savedOrder,
+//       client_secret: client_secret, // This is used on the frontend to confirm payment
+//     });
+//   } catch (error) {
+//     console.error("Error creating order:", error);
+//     res.status(500).json({ message: "Server error. Please try again later." });
+//   }
+// };
+
+
 const createOrder = async (req, res) => {
   try {
     // Extract data from the request body
     const { userId } = req;
-    const { gigId, price, status, email } = req.body;
-
-    // Find the gig in the database
-    const gig = await Job.findById(gigId);
-
-    const orderPrice = price/100;
-    const feeAndTax = (orderPrice * 0.02) +0.35;
+    const { gigId, price, status, email, isMilestone, milestones } = req.body;
 
     // Validate required fields
     if (!gigId || !price || !userId || !status || !email) {
       return res.status(400).json({ message: "All required fields must be provided." });
     }
 
+    // Validate milestones if it's a milestone order
+    if (isMilestone) {
+      if (!Array.isArray(milestones) || milestones.length === 0) {
+        return res.status(400).json({ message: "Milestones are required for milestone orders." });
+      }
+      const isValidMilestones = milestones.every(
+        (milestone) =>
+          milestone.title && 
+          milestone.description && 
+          milestone.deliveryTime && 
+          milestone.amount
+      );
+      if (!isValidMilestones) {
+        return res.status(400).json({ message: "Each milestone must have a title, description, deliveryTime, and amount." });
+      }
+    }
+
+    // Find the gig in the database
+    const gig = await Job.findById(gigId);
+
+    if (!gig) {
+      return res.status(404).json({ message: "Gig not found." });
+    }
+
+    const orderPrice = price / 100;
+    const feeAndTax = orderPrice * 0.02 + 0.35;
+
     // Create a new order in the database
     const newOrder = new Order({
       gigId: gigId,
       price: orderPrice,
-      feeAndTax :feeAndTax,
-      sellerId: gig.sellerId, // Use the sellerId from the gig
-      buyerId: userId, // Use the buyerId from the request
-      status: status, // Initial order status
-      payment_intent: "Temp", // Temporary placeholder for payment intent
+      feeAndTax: feeAndTax,
+      sellerId: gig.sellerId,
+      buyerId: userId,
+      status: status,
+      payment_intent: "Temp",
+      isMilestone: isMilestone || false,
+      milestones: isMilestone ? milestones : [],
     });
 
     // Save the order to the database
