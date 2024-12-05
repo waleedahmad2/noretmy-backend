@@ -3,7 +3,7 @@ const { handleStripeWebhook } = require("../controllers/PaymentController");
 const router = express.Router();
 
 
-router.get('/stripe', handleStripeWebhook);
+router.post('/stripe', handleStripeWebhook);
 
 
 
