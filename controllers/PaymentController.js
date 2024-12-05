@@ -1,12 +1,16 @@
 
 
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const paypal = require('@paypal/checkout-server-sdk');
+
 const Freelancer = require('../models/Freelancer');
 const Order = require('../models/Order'); 
 const User = require('../models/User');
 
 const bodyParser = require('body-parser');
 const { sendUserNotificationEmail } = require('../services/emailService');
+
+
 
 
 
@@ -115,6 +119,139 @@ exports.createCustomerAndPaymentIntentUtil = async (amount, email) => {
 
 
 
+// exports.withdrawFunds = async (req, res) => {
+//     const { email, amount } = req.body; // Freelancer's email and withdrawal amount
+
+//     try {
+//         // Check if the freelancer account exists
+//         let freelancerAccount = await Freelancer.findOne({ email });
+
+//         // If the account doesn't exist, create it
+//         if (!freelancerAccount) {
+//             const account = await stripe.accounts.create({
+//                 type: 'standard', // You can choose 'standard' or 'express'
+//                 country: 'US', // Set the country for the connected account
+//                 email: email, // Freelancer's email
+//                 capabilities: {
+//                     card_payments: { requested: true },
+//                     transfers: { requested: true },
+//                 },
+//             });
+
+//             // Create a new Freelancer record in the database
+//             freelancerAccount = new Freelancer({
+//                 email,
+//                 stripeAccountId: account.id,
+//                 availableBalance: 30, //
+//             });
+
+//             await freelancerAccount.save();
+//         }
+
+//         // Check if the available balance is sufficient
+//         if (freelancerAccount.availableBalance < amount) {
+//             return res.status(400).json({ error: 'Insufficient funds' });
+//         }
+
+//         // Create a payout to the freelancer's connected account
+//         const payout = await stripe.payouts.create(
+//             {
+//                 amount: amount, 
+//                 currency: 'usd', 
+//             },
+//             {
+//                 stripeAccount: freelancerAccount.stripeAccountId, 
+//             }
+//         );
+
+//         freelancerAccount.availableBalance -= amount;
+//         await freelancerAccount.save();
+
+//         res.status(200).json({ success: true, payout });
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).json({ success: false, error: error.message });
+//     }
+// };
+
+
+
+exports.paypalWithdrawFunds = async (req, res) => {
+    const { email, amount } = req.body; // Freelancer's email and withdrawal amount
+
+    try {
+        // Get PayPal access token
+        const tokenResponse = await axios.post(
+            'https://api-m.sandbox.paypal.com/v1/oauth2/token', // Use the live URL for production: 'https://api-m.paypal.com/v1/oauth2/token'
+            'grant_type=client_credentials',
+            {
+                auth: {
+                    username: process.env.PAYPAL_CLIENT_ID,
+                    password: process.env.PAYPAL_CLIENT_SECRET,
+                },
+            }
+        );
+
+        const accessToken = tokenResponse.data.access_token;
+
+        // Check if the freelancer exists in your database
+        const freelancer = await Freelancer.findOne({ email });
+        if (!freelancer) {
+            return res.status(404).json({ error: 'Freelancer account not found' });
+        }
+
+        // Check if the freelancer has sufficient balance
+        if (freelancer.availableBalance < amount) {
+            return res.status(400).json({ error: 'Insufficient funds' });
+        }
+
+        // Create a PayPal payout
+        const payoutResponse = await axios.post(
+            'https://api-m.sandbox.paypal.com/v1/payments/payouts', // Use the live URL for production: 'https://api-m.paypal.com/v1/payments/payouts'
+            {
+                sender_batch_header: {
+                    email_subject: 'You have a payout!',
+                    email_message: 'You have received a payout via PayPal.',
+                },
+                items: [
+                    {
+                        recipient_type: 'EMAIL',
+                        amount: {
+                            value: amount.toFixed(2), // Amount in USD
+                            currency: 'USD',
+                        },
+                        receiver: email, // PayPal email of the recipient
+                        note: 'Payout from platform',
+                    },
+                ],
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json',
+                },
+            }
+        );
+
+        // Deduct the amount from the freelancer's balance
+        freelancer.availableBalance -= amount;
+        await freelancer.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Payout successfully processed via PayPal',
+            payout: payoutResponse.data,
+        });
+    } catch (error) {
+        console.error('PayPal Payout Error:', error.message);
+        res.status(500).json({
+            success: false,
+            error: error.response?.data || error.message,
+        });
+    }
+};
+
+
 exports.withdrawFunds = async (req, res) => {
     const { email, amount } = req.body; // Freelancer's email and withdrawal amount
 
@@ -125,7 +262,7 @@ exports.withdrawFunds = async (req, res) => {
         // If the account doesn't exist, create it
         if (!freelancerAccount) {
             const account = await stripe.accounts.create({
-                type: 'standard', // You can choose 'standard' or 'express'
+                type: 'express', // Type of account (can be 'express' or 'custom' based on your needs)
                 country: 'US', // Set the country for the connected account
                 email: email, // Freelancer's email
                 capabilities: {
@@ -138,10 +275,44 @@ exports.withdrawFunds = async (req, res) => {
             freelancerAccount = new Freelancer({
                 email,
                 stripeAccountId: account.id,
-                availableBalance: 30, //
+                availableBalance: 30, // You can update the balance as per your requirements
             });
 
             await freelancerAccount.save();
+
+            // Create the onboarding link if the freelancer has not completed onboarding
+            const accountLink = await stripe.accountLinks.create({
+                account: account.id,
+                refresh_url: 'https://your-platform.com/onboarding-refresh', // Redirect if freelancer needs to update information
+                return_url: 'https://your-platform.com/onboarding-success', // Redirect after successful onboarding
+                type: 'account_onboarding', // Type of onboarding flow
+            });
+
+            // Send the onboarding link to the freelancer
+            return res.status(200).json({ 
+                success: true,
+                message: 'Freelancer account created. Complete your onboarding.',
+                link: accountLink.url // Redirect the freelancer to this URL to complete onboarding
+            });
+        }
+
+        // If the freelancer already exists, check if they have completed onboarding
+        const account = await stripe.accounts.retrieve(freelancerAccount.stripeAccountId);
+
+        if (account.charges_enabled === false) {
+            // If the freelancer has not completed onboarding, ask them to do so
+            const accountLink = await stripe.accountLinks.create({
+                account: freelancerAccount.stripeAccountId,
+                refresh_url: 'https://noretmy.com/onboarding-refresh', // Redirect if freelancer needs to update information
+                return_url: 'https://noretmy.com/onboarding-success', // Redirect after successful onboarding
+                type: 'account_onboarding',
+            })
+
+            return res.status(400).json({
+                success: false,
+                message: 'Please complete the onboarding process before withdrawing funds.',
+                link: accountLink.url // Send the onboarding link
+            });
         }
 
         // Check if the available balance is sufficient
@@ -152,14 +323,15 @@ exports.withdrawFunds = async (req, res) => {
         // Create a payout to the freelancer's connected account
         const payout = await stripe.payouts.create(
             {
-                amount: amount, 
-                currency: 'usd', 
+                amount: amount * 100, // Amount is in cents
+                currency: 'usd',
             },
             {
-                stripeAccount: freelancerAccount.stripeAccountId, 
+                stripeAccount: freelancerAccount.stripeAccountId, // Freelancer's Stripe account ID
             }
         );
 
+        // Update freelancer's balance after payout
         freelancerAccount.availableBalance -= amount;
         await freelancerAccount.save();
 
@@ -169,6 +341,65 @@ exports.withdrawFunds = async (req, res) => {
         res.status(500).json({ success: false, error: error.message });
     }
 };
+
+
+exports.withdrawFundsthroughPayPal = async (req, res) => {
+  const { email, amount } = req.body; 
+
+  try {
+      // Validate freelancer account
+      const freelancer = await Freelancer.findOne({ email });
+      if (!freelancer) {
+          return res.status(404).json({ error: 'Freelancer account not found.' });
+      }
+
+      // Validate available balance
+      if (freelancer.availableBalance < amount) {
+          return res.status(400).json({ error: 'Insufficient balance.' });
+      }
+
+      // Prepare the payout request
+      const requestBody = {
+          sender_batch_header: {
+              email_subject: "You have a payment from Noremt!",
+              email_message: "You have received your earnings. Thank you for working with Noremt!",
+          },
+          items: [
+              {
+                  recipient_type: "EMAIL",
+                  receiver: email, // Freelancer's PayPal email
+                  amount: {
+                      value: amount.toFixed(2), // Amount in USD
+                      currency: "USD",
+                  },
+                  note: "Withdrawal from Noremt platform",
+              },
+          ],
+      };
+
+      const request = new paypal.payouts.PayoutsPostRequest();
+      request.requestBody(requestBody);
+
+      // Execute the payout
+      const response = await client.execute(request);
+
+      // Update freelancer's balance
+      freelancer.availableBalance -= amount;
+      await freelancer.save();
+
+      // Respond to the client
+      res.status(200).json({
+          success: true,
+          message: 'Withdrawal successful.',
+          payoutBatchId: response.result.batch_header.payout_batch_id,
+      });
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+
 
 exports.processRefund = async (req, res) => {
     const { chargeId, amount } = req.body; // Charge ID and refund amount
@@ -197,10 +428,8 @@ exports.processRefund = async (req, res) => {
   let event;
 
   try {
-    // Pass raw body (Buffer) to stripe.webhooks.constructEvent for signature verification
     event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
 
-    // Handle different event types
     switch (event.type) {
       case 'payment_intent.succeeded':
         await handlePaymentIntentSucceeded(event.data.object);

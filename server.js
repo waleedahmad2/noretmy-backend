@@ -15,6 +15,7 @@ const contactRoutes = require('./routes/contactRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const sellerRoutes = require('./routes/sellerRoutes');
 const vatRoutes = require('./routes/vatRoutes');
+const webhookRutes = require('./routes/webhooksRoutes')
 
 
 require('./controllers/vatController'); 
@@ -55,7 +56,8 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 
-// app.use('/api/payment', paymentRoutes);
+app.use('/api/webhook', webhookRutes);
+
 
 
 app.use(express.json());
