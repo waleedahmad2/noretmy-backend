@@ -100,7 +100,7 @@ const createOrder = async (req, res) => {
     }
 
     const orderPrice = price / 100;
-    const feeAndTax = orderPrice * 0.02 + 0.35;
+    const feeAndTax = orderPrice * 0.01;
 
     // Create a new order in the database
     const newOrder = new Order({

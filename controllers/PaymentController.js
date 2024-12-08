@@ -12,9 +12,6 @@ const { sendUserNotificationEmail } = require('../services/emailService');
 
 
 
-
-
-
 exports.createCustomerAndPaymentIntent = async (req, res) => {
   const { amount, email } = req.body;
 
@@ -73,12 +70,10 @@ exports.createCustomerAndPaymentIntentUtil = async (amount, email) => {
   }
 
   try {
-    // Calculate the extra charges: 2% of the amount + 0.35 USD
-    const feePercentage = 0.02; // 2%
-    const fixedFee = 0.35; // 0.35 USD
+    const feePercentage = 0.01; 
 
     // Calculate the total amount in dollars first
-    const totalAmountInDollars = amount + (amount * feePercentage) + fixedFee;
+    const totalAmountInDollars = amount + (amount * feePercentage) ;
 
     // Convert total amount to cents (Stripe expects amount in cents)
     const totalAmountInCents = Math.round(totalAmountInDollars * 100);
