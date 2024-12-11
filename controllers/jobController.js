@@ -1,4 +1,3 @@
-// controllers/jobController.js
 const mongoose = require('mongoose');
 const Job = require('../models/Job');
 const User = require('../models/User');
