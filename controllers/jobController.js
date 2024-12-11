@@ -4,7 +4,7 @@ const Job = require('../models/Job');
 const User = require('../models/User');
 const UserProfile = require('../models/UserProfile');
 const Reviews = require('../models/Review');
-const { translateText } = require('./translationService'); 
+const { translateText } = require('../services/translateService'); 
 
 
 const createJob = async (req, res) => {
