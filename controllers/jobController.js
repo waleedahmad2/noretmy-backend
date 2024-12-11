@@ -4,6 +4,8 @@ const Job = require('../models/Job');
 const User = require('../models/User');
 const UserProfile = require('../models/UserProfile');
 const Reviews = require('../models/Review');
+const { translateText } = require('./translationService'); 
+
 
 const createJob = async (req, res) => {
     try {
@@ -136,20 +138,78 @@ const getUserJobs = async (req, res) => {
   };
 
 
-  const getFeaturedJobs = async (req, res) => {
-    try {
-      const jobs = await Job.find({ upgradeOption: "Feature listing" }); // Adjust query field if necessary
+  // const getFeaturedJobs = async (req, res) => {
+  //   try {
+  //     const jobs = await Job.find({ upgradeOption: "Feature listing" }); // Adjust query field if necessary
   
-      if (!jobs || jobs.length === 0) {
-        return res.status(404).json({ message: "No jobs found" });
-      }
+  //     if (!jobs || jobs.length === 0) {
+  //       return res.status(404).json({ message: "No jobs found" });
+  //     }
   
-      res.status(200).json(jobs);
-    } catch (error) {
-      res.status(500).json({ message: "Server Error", error: error.message });
+  //     res.status(200).json(jobs);
+  //   } catch (error) {
+  //     res.status(500).json({ message: "Server Error", error: error.message });
+  //   }
+  // };
+  
+
+
+const getFeaturedJobs = async (req, res) => {
+  try {
+    const { lang } = req.query;
+
+    const jobs = await Job.find({ upgradeOption: "Feature listing" });
+
+    if (!jobs || jobs.length === 0) {
+      return res.status(404).json({ message: "No jobs found" });
     }
-  };
-  
+
+    if (lang) {
+      const translatedJobs = await Promise.all(
+        jobs.map(async (job) => {
+          const translatedJob = {
+            ...job._doc, 
+            title: await translateText(job.title, "en", lang),
+            description: await translateText(job.description, "en", lang),
+            pricingPlan: {
+              basic: {
+                title: await translateText(job.pricingPlan.basic.title, "en", lang),
+                description: await translateText(job.pricingPlan.basic.description, "en", lang),
+              },
+              premium: {
+                title: await translateText(job.pricingPlan.premium.title, "en", lang),
+                description: await translateText(job.pricingPlan.premium.description, "en", lang),
+              },
+              pro: {
+                title: await translateText(job.pricingPlan.pro.title, "en", lang),
+                description: await translateText(job.pricingPlan.pro.description, "en", lang),
+              }
+            },
+            addons: {
+              title: await translateText(job.addons.title, "en", lang),
+            },
+            faqs: await Promise.all(
+              job.faqs.map(async (faq) => ({
+                question: await translateText(faq.question, "en", lang),
+                answer: await translateText(faq.answer, "en", lang),
+              }))
+            ),
+            whyChooseMe: await translateText(job.whyChooseMe, "en", lang),
+          };
+          return translatedJob;
+        })
+      );
+
+      return res.status(200).json(translatedJobs);
+    }
+
+    return res.status(200).json(jobs); 
+
+  } catch (error) {
+    console.error("Error fetching featured jobs:", error);
+    res.status(500).json({ message: "Server Error", error: error.message });
+  }
+};
 
   const deleteJob = async (req, res) => {
     try {

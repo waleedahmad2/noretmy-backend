@@ -32,7 +32,7 @@ const handleLogin = async (req, res,next) => {
       secure: true, 
   sameSite: 'None',
     }).status(200)
-    .json(user);
+    .json(user); 
   } catch (error) {
 res.status(500).send(error);
     console.log(error);
