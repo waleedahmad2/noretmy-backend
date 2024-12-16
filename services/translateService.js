@@ -21,14 +21,17 @@ const translateText = async (text, sourceLang, targetLang) => {
       description: await translateText(job.description, "en", lang),
       pricingPlan: {
         basic: {
+          ...job.pricingPlan.basic,
           title: await translateText(job.pricingPlan.basic.title, "en", lang),
           description: await translateText(job.pricingPlan.basic.description, "en", lang),
         },
         premium: {
+          ...job.pricingPlan.premium,
           title: await translateText(job.pricingPlan.premium.title, "en", lang),
           description: await translateText(job.pricingPlan.premium.description, "en", lang),
         },
         pro: {
+          ...job.pricingPlan.pro,
           title: await translateText(job.pricingPlan.pro.title, "en", lang),
           description: await translateText(job.pricingPlan.pro.description, "en", lang),
         },
