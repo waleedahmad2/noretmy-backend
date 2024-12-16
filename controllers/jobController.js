@@ -332,13 +332,12 @@ const getGigDetails = async (gigId,lang) => {
     // Fetch all reviews for this gig using gigId
     const reviews = await Reviews.find({ gigId: gigId }) || [];
 
-    const translatedGig=null;
-    const translatedReviews= null;
+    let translatedGig=null;
+    let translatedReviews= null;
 
     if(lang){
       translatedGig = await translateJob(gig,lang);
       translatedReviews = await translateReviews(reviews.map((review) => review.toObject()), lang);
-
 
     }
 
