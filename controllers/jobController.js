@@ -3,7 +3,7 @@ const Job = require('../models/Job');
 const User = require('../models/User');
 const UserProfile = require('../models/UserProfile');
 const Reviews = require('../models/Review');
-const { translateText, translateJob } = require('../services/translateService'); 
+const {  translateJob } = require('../services/translateService'); 
 
 
 const createJob = async (req, res) => {
@@ -387,4 +387,4 @@ const getGigDetailsController = async (req, res) => {
 
   
 
-module.exports = { createJob ,getAllJobs,getUserJobs,getFeaturedJobs,getGigDetailsController,deleteJob};
+module.exports = { createJob ,getAllJobs,getUserJobs,getFeaturedJobs  ,getGigDetailsController,deleteJob};

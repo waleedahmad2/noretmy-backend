@@ -12,8 +12,6 @@ export const translateText = async (text, sourceLang, targetLang) => {
   }
 };
 
-
-
 export const  translateJob = async (job, lang) => {
   try {
     return {
