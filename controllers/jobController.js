@@ -3,7 +3,7 @@ const Job = require('../models/Job');
 const User = require('../models/User');
 const UserProfile = require('../models/UserProfile');
 const Reviews = require('../models/Review');
-const {  translateJob } = require('../services/translateService'); 
+// const {  translateJob } = require('../services/translateService'); 
 
 
 const createJob = async (req, res) => {
@@ -211,27 +211,27 @@ const getUserJobs = async (req, res) => {
 // };
 
 
-const getFeaturedJobs = async (req, res) => {
-  try {
-    const { lang } = req.query;
+// const getFeaturedJobs = async (req, res) => {
+//   try {
+//     const { lang } = req.query;
 
-    const jobs = await Job.find({ upgradeOption: "Feature listing" });
+//     const jobs = await Job.find({ upgradeOption: "Feature listing" });
 
-    if (!jobs || jobs.length === 0) {
-      return res.status(404).json({ message: "No jobs found" });
-    }
+//     if (!jobs || jobs.length === 0) {
+//       return res.status(404).json({ message: "No jobs found" });
+//     }
 
-    if (lang) {
-      const translatedJobs = await Promise.all(jobs.map((job) => translateJob(job, lang)));
-      return res.status(200).json(translatedJobs);
-    }
+//     if (lang) {
+//       const translatedJobs = await Promise.all(jobs.map((job) => translateJob(job, lang)));
+//       return res.status(200).json(translatedJobs);
+//     }
 
-    return res.status(200).json(jobs);
-  } catch (error) {
-    console.error("Error fetching featured jobs:", error);
-    res.status(500).json({ message: "Server Error", error: error.message });
-  }
-};
+//     return res.status(200).json(jobs);
+//   } catch (error) {
+//     console.error("Error fetching featured jobs:", error);
+//     res.status(500).json({ message: "Server Error", error: error.message });
+//   }
+// };
 
 
 
@@ -387,4 +387,4 @@ const getGigDetailsController = async (req, res) => {
 
   
 
-module.exports = { createJob ,getAllJobs,getUserJobs,getFeaturedJobs  ,getGigDetailsController,deleteJob};
+module.exports = { createJob ,getAllJobs,getUserJobs ,getGigDetailsController,deleteJob};

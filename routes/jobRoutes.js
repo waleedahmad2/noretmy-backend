@@ -2,14 +2,14 @@
 const express = require('express');
 const multer = require('multer');
 const { storage } = require('../config/cloudinaryConfig');
-const { createJob ,getAllJobs, getUserJobs,getFeaturedJobs,getGigDetailsController, deleteJob} = require('../controllers/jobController');
+const { createJob ,getAllJobs, getUserJobs,getGigDetailsController, deleteJob} = require('../controllers/jobController');
 const { verifyToken } = require('../middleware/jwt');
 
 const upload = multer({ storage });
 
 const router = express.Router();
 
-// router.get("/feature", getFeaturedJobs);
+router.get("/feature", getFeaturedJobs);
 router.get("/user", verifyToken, getUserJobs); 
 router.get("/:id", getGigDetailsController); 
 
