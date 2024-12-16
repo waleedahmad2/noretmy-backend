@@ -9,7 +9,7 @@ const upload = multer({ storage });
 
 const router = express.Router();
 
-router.get("/feature", getFeaturedJobs);
+// router.get("/feature", getFeaturedJobs);
 router.get("/user", verifyToken, getUserJobs); 
 router.get("/:id", getGigDetailsController); 
 
