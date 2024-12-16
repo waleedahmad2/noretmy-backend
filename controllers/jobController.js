@@ -3,7 +3,7 @@ const Job = require('../models/Job');
 const User = require('../models/User');
 const UserProfile = require('../models/UserProfile');
 const Reviews = require('../models/Review');
-const {  translateJob } = require('../services/translateService'); 
+const {  translateJob, translateReviews } = require('../services/translateService'); 
 
 
 const createJob = async (req, res) => {
@@ -313,7 +313,9 @@ const getFeaturedJobs = async (req, res) => {
 // };
 
 
-const getGigDetails = async (gigId) => {
+const getGigDetails = async (gigId,lang) => {
+
+
   try {
     // Fetch the gig details using gigId
     const gig = await Job.findById(gigId);
@@ -330,9 +332,19 @@ const getGigDetails = async (gigId) => {
     // Fetch all reviews for this gig using gigId
     const reviews = await Reviews.find({ gigId: gigId }) || [];
 
+    const translatedGig=null;
+    const translatedReviews= null;
+
+    if(lang){
+      translatedGig = await translateJob(gig,lang);
+      translatedReviews = await translateReviews(reviews.map((review) => review.toObject()), lang);
+
+
+    }
+
     // Fetch user details (username and profile picture) for each review
     const reviewsWithUserDetails = await Promise.all(
-      reviews.map(async (review) => {
+     (translatedReviews || reviews).map(async (review) => {
         const user = await User.findById(review.userId) || { username: "Unknown User" };
         const userProfile = await UserProfile.findOne({ userId: review.userId }) || { profilePicture: "/default-avatar.png" };
         return {
@@ -345,13 +357,14 @@ const getGigDetails = async (gigId) => {
       })
     );
 
+    
     // Calculate the average rating (out of 5) from the reviews
     const totalStars = reviews.reduce((sum, review) => sum + review.star, 0);
     const averageRating = reviews.length > 0 ? (totalStars / reviews.length).toFixed(2) : "N/A";
 
     // Structure the data to be returned
     const gigDetails = {
-      gig: gig,
+      gig: translatedGig || gig,
       seller: {
         fullName: seller.fullName || "Unknown Seller",
         userId: seller._id,
@@ -373,8 +386,11 @@ const getGigDetails = async (gigId) => {
 // Controller function to handle gig details route
 const getGigDetailsController = async (req, res) => {
   const { id } = req.params;
+
+  const { lang } = req.query;
+
   
-  const gigDetails = await getGigDetails(id);
+  const gigDetails = await getGigDetails(id,lang);
 
   if (gigDetails.error) {
     return res.status(404).json({ message: gigDetails.error });

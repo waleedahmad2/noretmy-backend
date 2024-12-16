@@ -12,6 +12,7 @@ const translateText = async (text, sourceLang, targetLang) => {
   }
 };
 
+
  const  translateJob = async (job, lang) => {
   try {
     return {
@@ -45,11 +46,25 @@ const translateText = async (text, sourceLang, targetLang) => {
     };
   } catch (error) {
     console.error("Error translating job:", error);
-    throw new Error("Translation failed");
+    // throw new Error("Translation failed");
+    return job
   }
 };
 
+const translateReviews = async (reviews, lang) => {
+  try {
+    return await Promise.all(
+      reviews.map(async (review) => ({
+        ...review,
+        desc: await translateText(review.desc,'en',lang),
+      }))
+    );
+  } catch (error) {
+    console.error("Error during reviews translation:", error);
+    return reviews; // Return the original reviews if translation fails
+  }
+};
 
 module.exports={
-  translateJob
+  translateJob,translateReviews
 };
