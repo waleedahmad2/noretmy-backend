@@ -2,11 +2,14 @@ const Job = require("../models/Job");
 const Order = require("../models/Order"); 
 const User = require('../models/User');
 const UserProfile = require('../models/UserProfile');
-
-
 const { createCustomerAndPaymentIntentUtil } = require("./PaymentController");
 
 const dayjs=require("dayjs");
+const axios = require('axios');
+
+const PAYPAL_API = process.env.PAYPAL_API || "https://api-m.sandbox.paypal.com";
+const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID;
+const PAYPAL_SECRET = process.env.PAYPAL_SECRET;
 
 
 // Controller to create a new order
@@ -137,6 +140,89 @@ const createOrder = async (req, res) => {
   } catch (error) {
     console.error("Error creating order:", error);
     res.status(500).json({ message: "Server error. Please try again later." });
+  }
+};
+
+
+const createOrderPaypal = async (req, res) => {
+  const { amount, currency = 'USD' } = req.body;
+
+  try {
+    // Get access token
+    const { data: { access_token } } = await axios.post(
+      `${PAYPAL_API}/v1/oauth2/token`,
+      'grant_type=client_credentials',
+      {
+        auth: {
+          username: PAYPAL_CLIENT_ID,
+          password: PAYPAL_SECRET,
+        },
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      }
+    );
+
+    // Create order
+    const orderResponse = await axios.post(
+      `${PAYPAL_API}/v2/checkout/orders`,
+      {
+        intent: 'CAPTURE',
+        purchase_units: [{
+          amount: {
+            currency_code: currency,
+            value: amount,
+          },
+        }],
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${access_token}`,
+        },
+      }
+    );
+
+    res.status(200).json({ id: orderResponse.data.id });
+  } catch (error) {
+    console.error('Error creating PayPal order:', error.message);
+    res.status(500).send('Something went wrong');
+  }
+};
+
+const captureOrder = async (req, res) => {
+  const { orderID } = req.body;
+
+  try {
+    // Get access token
+    const { data: { access_token } } = await axios.post(
+      `${PAYPAL_API}/v1/oauth2/token`,
+      'grant_type=client_credentials',
+      {
+        auth: {
+          username: PAYPAL_CLIENT_ID,
+          password: PAYPAL_SECRET,
+        },
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      }
+    );
+
+    // Capture payment
+    const captureResponse = await axios.post(
+      `${PAYPAL_API}/v2/checkout/orders/${orderID}/capture`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${access_token}`,
+        },
+      }
+    );
+
+    res.status(200).json(captureResponse.data);
+  } catch (error) {
+    console.error('Error capturing PayPal order:', error.message);
+    res.status(500).send('Something went wrong');
   }
 };
 
@@ -301,5 +387,5 @@ const getSingleOrderDetail = async (req, res) => {
 
 
 module.exports = {
-  createOrder,getOrders,getUserOrders,getPaymentsSummary,getSingleOrderDetail
+  createOrder,getOrders,getUserOrders,getPaymentsSummary,getSingleOrderDetail,createOrderPaypal,captureOrder
 };

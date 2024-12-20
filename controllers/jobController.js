@@ -11,7 +11,7 @@ const createJob = async (req, res) => {
         const {
             title,
             location,
-            cat,   // Category is now included
+            cat,   
             description,
             keywords,
             whyChooseMe,

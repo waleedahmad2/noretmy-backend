@@ -7,7 +7,9 @@ const {
   getOrders,
   getPaymentsSummary,
   getUserOrders,
-  getSingleOrderDetail 
+  getSingleOrderDetail, 
+  createOrderPaypal,
+  captureOrder
 } = require('../controllers/orderControllers');
 const { verifyToken } = require('../middleware/jwt');
 
@@ -17,6 +19,9 @@ const router = express.Router();
 /* ----------------- Order Routes ----------------- */
 // Create a new order
 router.post('/', verifyToken, createOrder);
+router.post('/create-order/paypal', createOrderPaypal);
+router.post('/capture-order', captureOrder);
+
 
 // Get all orders (admin or system-level access)
 router.get('/', getOrders);
